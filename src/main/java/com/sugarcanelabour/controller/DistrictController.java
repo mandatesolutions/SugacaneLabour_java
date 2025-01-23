@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
-import com.sugarcanelabour.Repository.DistrictRepository;
-import com.sugarcanelabour.Repository.TalukaRepository;
 import com.sugarcanelabour.entity.District;
 import com.sugarcanelabour.entity.Taluka;
+import com.sugarcanelabour.repository.DistrictRepository;
+import com.sugarcanelabour.repository.TalukaRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -40,7 +40,7 @@ public class DistrictController {
 	}
 
 	@Transactional
-	
+	@Operation(summary = "Get Districts API", description = "This API is used to get various districts")
 	@GetMapping("/getAllDistricts")
 	ResponseEntity<Object> getAllDistricts() {
 		log.info("***** Inside - DistrictController - getAllDistricts *****");
@@ -54,6 +54,7 @@ public class DistrictController {
 
 
 	@GetMapping("/getTalukas/{districtId}")
+	@Operation(summary = "Get Talukas API", description = "This API is used to get various talukas by district Id")
 	ResponseEntity<Object> getAllTalukas(@PathVariable long districtId) {
 		log.info("***** Inside - DistrictController - getAllTalukas *****");
 		Map<Object, Object> response = new HashMap<>();

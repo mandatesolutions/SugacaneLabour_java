@@ -15,10 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sugarcanelabour.entity.Role;
 import com.sugarcanelabour.service.RoleService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/roles")
+@Slf4j
+@RequestMapping("/sclm/roles")
 public class RoleController {
 	
 	private RoleService roleService;
@@ -28,40 +33,56 @@ public class RoleController {
 	}
 
 
-	@PostMapping("/create")
-	    public ResponseEntity<Role> createRole(@RequestBody Role role) {
-	        Role createdRole = roleService.createRole(role);
-	        return new ResponseEntity<>(createdRole, HttpStatus.CREATED);
-	    }
+	 @Operation(summary = "Add Role Api", description = "This API is used to add the roles")
+	@PostMapping("/add")
+	    public ResponseEntity<Object> addRole(@RequestBody Role role) 
+	{
+		if (log.isInfoEnabled())
+		{
+			log.info("***** Inside RoleController - add *****");
+		}
+		return roleService.addRole(role);
+	}
 
-	 // Get all roles
-    @GetMapping("/getAll")
-    public ResponseEntity<List<Role>> getAllRoles() {
-        List<Role> roles = roleService.getAllRoles();
-        return new ResponseEntity<>(roles, HttpStatus.OK);
-    }
-    
-    //get role by id
-    @GetMapping("/{id}")
-    public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
-        Role role = roleService.getRoleById(id);
-        return new ResponseEntity<>(role, HttpStatus.OK);
-    }
-    
-    //update role by id
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Role> updateRole(@PathVariable Long id, @RequestBody Role role)
-    {
-    	Role updatedRole = roleService.updateRole(id,role);
-    	return new ResponseEntity<>(updatedRole , HttpStatus.OK);
-    }
+	 //get all roles
+	 	@Operation(summary = "Get All Roles API", description = "This API is used to retrieve all roles")
+	    @GetMapping("/all")
+	    public ResponseEntity<Object> getAllRoles() {
+	        if (log.isInfoEnabled()) {
+	            log.info("***** Inside RoleController - getAllRoles *****");
+	        }
+	        return roleService.getAllRoles();
+	    }
+	 
+	 	//get role by id
+	 	 @Operation(summary = "Get Role by ID API", description = "This API is used to retrieve a role by its ID")
+	     @GetMapping("/{id}")
+	     public ResponseEntity<Object> getRoleById(@PathVariable Long id) {
+	         if (log.isInfoEnabled()) {
+	             log.info("***** Inside RoleController - getRoleById *****");
+	         }
+	         return roleService.getRoleById(id);
+	        
+	     }
+	 	 
+	 	 //update role
+	 	 @Operation(summary = "Update Role API", description = "This API is used to update an existing role")
+	     @PutMapping("/update/{id}")
+	     public ResponseEntity<Object> updateRole(@PathVariable Long id, @Valid @RequestBody Role role) {
+	         if (log.isInfoEnabled()) {
+	             log.info("***** Inside RoleController - updateRole *****");
+	         }
+	         return roleService.updateRole(id, role);
+	         
+	     }
     
     // Delete a role by ID
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
-        roleService.deleteRole(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    
+	 	@Operation(summary = "Delete Role API", description = "This API is used to delete a role by its ID")
+	    @DeleteMapping("/delete/{id}")
+	    public ResponseEntity<Object> deleteRole(@PathVariable Long id) {
+	        if (log.isInfoEnabled()) {
+	            log.info("***** Inside RoleController - deleteRole *****");
+	        }
+	        return roleService.deleteRole(id);
+	 	}
 }

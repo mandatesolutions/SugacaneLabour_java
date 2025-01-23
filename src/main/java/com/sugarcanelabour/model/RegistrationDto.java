@@ -1,4 +1,4 @@
-package com.sugarcanelabour.Model;
+package com.sugarcanelabour.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

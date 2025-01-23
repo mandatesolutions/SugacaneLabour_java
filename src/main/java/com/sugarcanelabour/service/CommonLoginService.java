@@ -1,8 +1,8 @@
 package com.sugarcanelabour.service;
 
-import com.sugarcanelabour.Model.RegistrationDto;
-import com.sugarcanelabour.Model.SuperAdminRegistrationDto;
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.model.RegistrationDto;
+import com.sugarcanelabour.model.SuperAdminRegistrationDto;
 
 public interface CommonLoginService {
 
@@ -17,6 +17,10 @@ public interface CommonLoginService {
 
 
 	CommonLogin registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
+
+
+
+	//CommonLogin registerSupervisor(RegistrationDto registrationDto);
 
 	
 
