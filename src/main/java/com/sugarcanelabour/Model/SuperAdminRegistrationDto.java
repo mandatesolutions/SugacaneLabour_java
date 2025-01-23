@@ -1,0 +1,18 @@
+package com.sugarcanelabour.Model;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
+public class SuperAdminRegistrationDto {
+	 @NotBlank(message = "Email cannot be blank")
+	 @Email(message = "Invalid email format")
+	 private String Email;
+	
+	 @NotBlank(message = "password cannot be blank")
+	 private String password;
+
+}

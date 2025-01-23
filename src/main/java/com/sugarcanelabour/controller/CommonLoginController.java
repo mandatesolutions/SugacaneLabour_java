@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.Model.LoginRequest;
+import com.sugarcanelabour.Model.RegistrationDto;
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.service.CommonLoginService;
 
@@ -20,13 +21,20 @@ public class CommonLoginController {
 	@Autowired
     private CommonLoginService loginService;
     
-	 @PostMapping
-	    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-	        try {
-	            String result = loginService.login(request.getEmail(), request.getPassword());
-	            return ResponseEntity.ok(result);
-	        } catch (IllegalArgumentException e) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-	        }
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+	    System.out.println("Login attempt with email: " + request.getEmail()); // Debug print
+	    try {
+	        String result = loginService.login(request.getEmail(), request.getPassword());
+	        return ResponseEntity.ok(result);
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
 	    }
+	}
+	 
+//	  @PostMapping("/register-supervisor")
+//	    public ResponseEntity<CommonLogin> registerSupervisor(@RequestBody SupervisorRegistrationDto supervisorDto) {
+//	        CommonLogin registeredSupervisor = loginService.registerSupervisor(supervisorDto);
+//	        return ResponseEntity.status(HttpStatus.CREATED).body(registeredSupervisor);
+//	    }
 }
