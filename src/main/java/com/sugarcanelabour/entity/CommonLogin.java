@@ -23,22 +23,20 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
-@Table
+@Table(name = "common_login")
 public class CommonLogin {
 	
 		@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long userId;
 
-		@NotBlank(message = "Email cannot be blank")
-	    @Email(message = "Invalid email format")
+		
 	    private String email;
 	    
-	    @NotBlank(message = "Mobile number cannot be blank")
-	    @Size(min = 10, max = 10, message = "Mobile number must be exactly 10 digits")
+	   
 	    private String mobileNo;
 	    
-	    @NotBlank(message = "Password cannot be blank")
+	   
 	    private String password;
 	  
 	    

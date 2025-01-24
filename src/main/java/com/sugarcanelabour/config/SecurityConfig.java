@@ -13,7 +13,7 @@ public class SecurityConfig {
 	        http.csrf().disable()
 	            .authorizeRequests()
 	            .requestMatchers("/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-	            .anyRequest().authenticated();
+	            .anyRequest().permitAll();
 	        return http.build();
 	    }
 	 

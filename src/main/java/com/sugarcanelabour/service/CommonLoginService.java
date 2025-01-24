@@ -1,14 +1,19 @@
 package com.sugarcanelabour.service;
 
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.model.LoginRequest;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
 
+import jakarta.validation.Valid;
+
 public interface CommonLoginService {
 
-	String login(String email, String password);
-
-
+	
 
 	//CommonLogin registerSupervisor(RegistrationDto supervisorDto, String role);
 
@@ -16,7 +21,11 @@ public interface CommonLoginService {
 
 
 
-	CommonLogin registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
+	ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
+
+
+
+	ResponseEntity<Object> login(@Valid LoginRequest loginRequest) throws Exception;
 
 
 

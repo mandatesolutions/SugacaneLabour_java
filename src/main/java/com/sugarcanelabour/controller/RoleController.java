@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
-@RequestMapping("/sclm/roles")
+@RequestMapping("/sclm/labor")
 public class RoleController {
 	
 	private RoleService roleService;

@@ -14,7 +14,7 @@ import com.sugarcanelabour.service.CommonLoginService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/sclm/admin")
+@RequestMapping("/sclm/labor")
 public class AdminController {
 	
 	 @Autowired
