@@ -1,5 +1,8 @@
 package com.sugarcanelabour.controller.SuperAdmin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +20,22 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @RequestMapping("/sclm/admin")
 public class SuperAdminController {
 
-	  @Autowired
-	    private CommonLoginService commonLoginService;
+	@Autowired
+	private CommonLoginService commonLoginService;
 
-	  @PostMapping("/super-admin/register")
-	  public ResponseEntity<String> registerSuperAdmin(@RequestBody SuperAdminRegistrationDto superAdminDto) {
-	      try {
-	          CommonLogin newSuperAdmin = commonLoginService.registerSuperAdmin(superAdminDto);
-	          return ResponseEntity.ok("Super Admin registered successfully");
-	      } catch (Exception e) {
-	          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Super Admin registration failed: " + e.getMessage());
-	      }
-	  }
+	@PostMapping("/super-admin/register")
+	public ResponseEntity<Object> registerSuperAdmin(@RequestBody SuperAdminRegistrationDto superAdminDto) {
+	    try {
+	        return commonLoginService.registerSuperAdmin(superAdminDto);
+	    } catch (Exception e) {
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "failure");
+	        response.put("message", "Super Admin registration failed: " + e.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
+	}
+
+
+	  
 
 }

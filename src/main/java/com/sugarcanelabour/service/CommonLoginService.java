@@ -1,5 +1,9 @@
 package com.sugarcanelabour.service;
 
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
@@ -16,7 +20,7 @@ public interface CommonLoginService {
 
 
 
-	CommonLogin registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
+	ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
 
 
 
