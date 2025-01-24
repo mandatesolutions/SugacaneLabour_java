@@ -5,18 +5,19 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.sugarcanelabour.entity.Role;
+import com.sugarcanelabour.helper.ApiResponse;
 
 public interface RoleService {
 
-	ResponseEntity<Object> getAllRoles();
+	ResponseEntity<ApiResponse<List<Role>>> getAllRoles();
 
 
-	ResponseEntity<Object> getRoleById(Long id);
+	ResponseEntity<ApiResponse<Role>> getRoleById(Long id);
 	
 	ResponseEntity<Object> updateRole(Long id, Role role);
 
 	ResponseEntity<Object> deleteRole(Long id);
 
-	ResponseEntity<Object> addRole(Role role);
+	ResponseEntity<ApiResponse<String>> addRole(Role role);
 	
 }

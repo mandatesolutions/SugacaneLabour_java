@@ -8,6 +8,7 @@ public class SugarCaneLabourmanagmentApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SugarCaneLabourmanagmentApplication.class, args);
+		System.out.println("Server started..");
 	}
 
 }

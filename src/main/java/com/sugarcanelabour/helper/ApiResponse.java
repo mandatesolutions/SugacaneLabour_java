@@ -7,10 +7,16 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse {
+@NoArgsConstructor
+public class ApiResponse<T> {
 	private String status;
 	private String message;
+	private T data;
+
+	public ApiResponse(T data) {
+		super();
+		this.data = data;
+	}
 
 }
