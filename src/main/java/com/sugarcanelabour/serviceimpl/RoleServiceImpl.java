@@ -31,24 +31,28 @@ public class RoleServiceImpl implements RoleService{
 	 private Map<Object, Object> response;
 	 
 	 //add role
-	 	@Transactional
-	    @Override
-	    public ResponseEntity<Object> addRole(Role role) {
-	        response = new HashMap<>();
-	        
-	        // Check if the role already exists
-	        Optional<Role> existingRole = roleRepository.findByRoleName(role.getRoleName());
-	        if (existingRole.isPresent()) {
-	            response.put("status", "failure");
-	            response.put("message", "Role with the name " + role.getRoleName() + " already exists.");
-	            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	        }
+	 @Transactional
+	 @Override
+	 public ResponseEntity<Object> addRole(Role role) {
+	     response = new HashMap<>();
 
-	        roleRepository.save(role);
-	        response.put("status", "success");
-	        response.put("message", CommonMessages.ROLE_ADD_SUCCESSFUL);
-	        return new ResponseEntity<>(response, HttpStatus.CREATED);
-	    }
+	     // Check if the role already exists
+	     Optional<Role> existingRole = roleRepository.findByRoleName(role.getRoleName());
+	     if (existingRole.isPresent()) {
+	         response.put("status", "failure");
+	         response.put("message", "Role with the name " + role.getRoleName() + " already exists.");
+	         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	     }
+
+	     // Debugging: Check the roleName before saving
+	     log.info("Saving Role: " + role.getRoleName());
+
+	     roleRepository.save(role);
+	     response.put("status", "success");
+	     response.put("message", CommonMessages.ROLE_ADD_SUCCESSFUL);
+	     return new ResponseEntity<>(response, HttpStatus.CREATED);
+	 }
+
 	 
 	 //get All roles
 

@@ -16,6 +16,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,19 +32,22 @@ public class CommonLogin {
 	    private Long userId;
 
 		
+		
+		@Email
+		@NotBlank(message = "Email cannot be blank")
 	    private String email;
 	    
 	   
 	    private String mobileNo;
 	    
-	   
+	    @NotBlank(message = "Password cannot be blank")
 	    private String password;
 	  
 	    
 //	    @OneToMany(mappedBy = "commonLogin", cascade = CascadeType.ALL, orphanRemoval = true)
 //	    private List<Document> documents;
 
-	    @JsonIgnore
+	//    @JsonIgnore
 	    @ManyToOne(fetch = FetchType.LAZY)
 	    @JoinColumn(name = "Roles")
 	    private Role role; 

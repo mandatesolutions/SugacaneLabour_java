@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -32,33 +32,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommonLoginServiceImpl implements CommonLoginService {
 	
-	private CommonLoginRepository loginRepository;
+	
+
+    private CommonLoginRepository loginRepository;
     private SupervisorDetailsRepository supervisorDetailsRepository;
-    private BCryptPasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
     private RoleRepository roleRepository;
     private CustomJwtUserDetailService customJwtUserDetailService;
     private JwtHelper jwtHelper;
-    
+
     public CommonLoginServiceImpl(CommonLoginRepository loginRepository,
                                   SupervisorDetailsRepository supervisorDetailsRepository,
-                                  BCryptPasswordEncoder passwordEncoder,RoleRepository roleRepository,CustomJwtUserDetailService customJwtUserDetailService,JwtHelper jwtHelper) {
+                                  PasswordEncoder passwordEncoder, RoleRepository roleRepository,
+                                  CustomJwtUserDetailService customJwtUserDetailService, JwtHelper jwtHelper) {
         this.loginRepository = loginRepository;
         this.supervisorDetailsRepository = supervisorDetailsRepository;
         this.passwordEncoder = passwordEncoder;
-        this.roleRepository=roleRepository;
-        this.customJwtUserDetailService=customJwtUserDetailService;
-        this.jwtHelper=jwtHelper;
+        this.roleRepository = roleRepository;
+        this.customJwtUserDetailService = customJwtUserDetailService;
+        this.jwtHelper = jwtHelper;
     }
-    
-    //login
+
+    // Login with JWT token generation
     @Override
     public ResponseEntity<Object> login(LoginRequest request) {
         log.info("Attempting to login with email: {}", request.getEmail());
 
-        // Response map to store response details
         Map<String, Object> response = new HashMap<>();
 
-        // Find the user by email
         CommonLogin user = loginRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     log.warn("Invalid email provided: {}", request.getEmail());
@@ -67,7 +68,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
                     return new IllegalArgumentException("Invalid email or password");
                 });
 
-        // Validate the password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("Password mismatch for email: {}", request.getEmail());
             response.put("status", "FAILED");
@@ -75,82 +75,86 @@ public class CommonLoginServiceImpl implements CommonLoginService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        // Populate the response details on successful login
+        String jwtToken = jwtHelper.generateToken(user);
+
         response.put("status", "SUCCESS");
         response.put("message", "Login successful");
         response.put("userId", user.getUserId());
         response.put("email", user.getEmail());
         response.put("role", user.getRole().getRoleName());
+        response.put("token", jwtToken);
 
         log.info("Login successful for userId: {} with role: {}", user.getUserId(), user.getRole().getRoleName());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
-    
-    
-    //super-admin register
-    
+    // Super-admin register
     @Transactional
     @Override
     public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
-        log.info("***** Inside - SuperAdminServiceImpl - registerSuperAdmin *****");
-        
+        log.info("Registering Super Admin with email: {}", superAdminDto.getEmail());
+
         Map<String, Object> response = new HashMap<>();
 
+        // Validate email and password
+        if (superAdminDto.getEmail() == null || superAdminDto.getEmail().isEmpty()) {
+            response.put("status", "FAILED");
+            response.put("message", "Email cannot be null or empty");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
+            response.put("status", "FAILED");
+            response.put("message", "Password cannot be null or empty");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
         try {
-            // Debugging: Log the incoming values
-            log.info("Received email: {}", superAdminDto.getEmail());
-            log.info("Received password: {}", superAdminDto.getPassword()); // Log password to check for hidden characters
-
-            // Validate email and password
-            if (superAdminDto.getEmail() == null || superAdminDto.getEmail().isEmpty()) {
-                response.put("status", "failure");
-                response.put("message", "Email cannot be null or empty");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
-                response.put("status", "failure");
-                response.put("message", "Password cannot be null or empty");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
             // Encrypt the password
             String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
 
-            // Get or create the ADMIN role automatically, no need to pass it in the request
-            Optional<Role> optionalRole = roleRepository.findByRoleName("ADMIN");
-            Role ROLE_ADMIN = optionalRole.orElseGet(() -> {
-                // Create the role if it doesn't exist
-                Role newRole = new Role();
-                newRole.setRoleName("ADMIN");
-                return roleRepository.save(newRole);
-            });
+            // Fetch or create the ADMIN role
+            Role adminRole = roleRepository.findByRoleName("ADMIN")
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setRoleName("ADMIN");
+                        return roleRepository.save(newRole);
+                    });
 
-            // Create the CommonLogin object for the super admin
-            CommonLogin adminLogin = new CommonLogin();
-            adminLogin.setEmail(superAdminDto.getEmail()); // Set email first
-            adminLogin.setPassword(encryptedPassword); // Then set password
-            adminLogin.setRole(ROLE_ADMIN); // Automatically set the ADMIN role
+            // Check if a user with the same email already exists
+            Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
+            if (existingUser.isPresent()) {
+                log.warn("Super Admin with email {} already exists", superAdminDto.getEmail());
+                response.put("status", "FAILED");
+                response.put("message", "Super Admin with this email already exists");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
 
-            // Save the super admin login
-            CommonLogin savedAdmin = loginRepository.save(adminLogin);
+            // Create and save the super admin user
+            CommonLogin superAdmin = new CommonLogin();
+            superAdmin.setEmail(superAdminDto.getEmail());
+            superAdmin.setPassword(encryptedPassword);
+            superAdmin.setRole(adminRole);
 
-            // Prepare success response
-            response.put("status", "success");
+            CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
+
+            response.put("status", "SUCCESS");
             response.put("message", "Super Admin registered successfully");
-            response.put("data", savedAdmin); // Include the saved admin details
+            response.put("userId", savedSuperAdmin.getUserId());
+            response.put("email", savedSuperAdmin.getEmail());
+            response.put("role", savedSuperAdmin.getRole().getRoleName());
 
+            log.info("Super Admin registered successfully with email: {}", superAdminDto.getEmail());
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } catch (Exception e) {
-            // Handle exceptions and prepare failure response
-            response.put("status", "failure");
+            log.error("Error while registering Super Admin: {}", e.getMessage());
+            response.put("status", "FAILED");
             response.put("message", "Super Admin registration failed: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 
