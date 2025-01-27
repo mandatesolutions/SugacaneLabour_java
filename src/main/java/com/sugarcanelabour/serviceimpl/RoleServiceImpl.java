@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,7 @@ public class RoleServiceImpl implements RoleService {
 		this.roleRepository = roleRepository;
 	}
 
-	 private Map<Object, Object> response;
+	private Map<Object, Object> response;
 
 	// add role
 	@Transactional
@@ -38,8 +40,8 @@ public class RoleServiceImpl implements RoleService {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside RoleServiceImpl - addRole *****");
 		}
-		Optional<Role> existingRole = roleRepository.findByRoleName(role.getRoleName());
 		ApiResponse<String> response = new ApiResponse<>();
+		Optional<Role> existingRole = roleRepository.findByRoleName(role.getRoleName());
 
 		if (existingRole.isPresent()) {
 			response.setStatus(CommonMessages.FAILED);
@@ -55,9 +57,10 @@ public class RoleServiceImpl implements RoleService {
 
 	// get All roles
 
+	@Cacheable(value = "roles", key = "'allRoles'")
 	@Transactional
 	@Override
-	public ResponseEntity<ApiResponse<List<Role>>> getAllRoles() {
+	public ApiResponse<List<Role>> getAllRoles() {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside RoleServiceImpl - getAllRoles *****");
 		}
@@ -65,9 +68,8 @@ public class RoleServiceImpl implements RoleService {
 		if (roles.isEmpty()) {
 			throw new ResourceNotFoundException("No roles available.");
 		}
-		ApiResponse<List<Role>> response = new ApiResponse<>(CommonMessages.SUCCESS, CommonMessages.ROLE_GET_SUCCESSFUL,
-				roles);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ApiResponse<>(CommonMessages.SUCCESS, CommonMessages.ROLE_GET_SUCCESSFUL, roles);
+
 	}
 
 	// get role by id
@@ -85,30 +87,36 @@ public class RoleServiceImpl implements RoleService {
 
 	// update Role
 
+	@CacheEvict(value = "roles", allEntries = true)
 	@Transactional
 	@Override
-	public ResponseEntity<Object> updateRole(Long id, Role updatedRole) {
-		response = new HashMap<>();
+	public ResponseEntity<ApiResponse<String>> updateRole(Long id, Role updatedRole) {
+		if (log.isInfoEnabled()) {
+			log.info("***** Inside RoleServiceImpl - updateRole *****");
+		}
 		Role existingRole = roleRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Role with ID " + id + " not found."));
 		existingRole.setRoleName(updatedRole.getRoleName());
 		roleRepository.save(existingRole);
-		response.put("status", "success");
-		response.put("message", CommonMessages.ROLE_UPDATE_SUCCESSFUL);
+		ApiResponse<String> response = new ApiResponse<String>(CommonMessages.SUCCESS,
+				CommonMessages.ROLE_UPDATE_SUCCESSFUL, null);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// Delete role
+	@CacheEvict(value = "roles", allEntries = true)
 	@Transactional
 	@Override
-	public ResponseEntity<Object> deleteRole(Long id) {
-		response = new HashMap<>();
-
+	public ResponseEntity<ApiResponse<String>> deleteRole(Long id) {
+		if (log.isInfoEnabled()) {
+			log.info("***** Inside RoleServiceImpl - deleteRole *****");
+		}
 		Role existingRole = roleRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Role with ID " + id + " not found."));
 		roleRepository.delete(existingRole);
-		response.put("status", "success");
-		response.put("message", CommonMessages.ROLE_DELETE_SUCCESSFUL);
+		ApiResponse<String> response = new ApiResponse<>();
+		response.setStatus(CommonMessages.SUCCESS);
+		response.setMessage(CommonMessages.ROLE_DELETE_SUCCESSFUL);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

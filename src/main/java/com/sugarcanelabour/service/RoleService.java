@@ -9,14 +9,14 @@ import com.sugarcanelabour.helper.ApiResponse;
 
 public interface RoleService {
 
-	ResponseEntity<ApiResponse<List<Role>>> getAllRoles();
+	ApiResponse<List<Role>> getAllRoles();
 
 
 	ResponseEntity<ApiResponse<Role>> getRoleById(Long id);
 	
-	ResponseEntity<Object> updateRole(Long id, Role role);
+	ResponseEntity<ApiResponse<String>> updateRole(Long id, Role role);
 
-	ResponseEntity<Object> deleteRole(Long id);
+	ResponseEntity<ApiResponse<String>> deleteRole(Long id);
 
 	ResponseEntity<ApiResponse<String>> addRole(Role role);
 	

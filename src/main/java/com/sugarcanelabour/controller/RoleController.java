@@ -2,12 +2,14 @@ package com.sugarcanelabour.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +20,7 @@ import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.service.RoleService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +52,8 @@ public class RoleController {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside RoleController - getAllRoles *****");
 		}
-		return roleService.getAllRoles();
+		ApiResponse<List<Role>> response = roleService.getAllRoles();
+		  return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// get role by id
@@ -67,7 +70,7 @@ public class RoleController {
 	// update role
 	@Operation(summary = "Update Role API", description = "This API is used to update an existing role")
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Object> updateRole(@PathVariable Long id, @Valid @RequestBody Role role) {
+	public ResponseEntity<ApiResponse<String>> updateRole(@PathVariable Long id, @Valid @RequestBody Role role) {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside RoleController - updateRole *****");
 		}
@@ -78,7 +81,7 @@ public class RoleController {
 	// Delete a role by ID
 	@Operation(summary = "Delete Role API", description = "This API is used to delete a role by its ID")
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<Object> deleteRole(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<String>> deleteRole(@PathVariable Long id) {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside RoleController - deleteRole *****");
 		}
