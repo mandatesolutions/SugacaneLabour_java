@@ -60,6 +60,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
         Map<String, Object> response = new HashMap<>();
 
+        // Fetch user details based on email
         CommonLogin user = loginRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     log.warn("Invalid email provided: {}", request.getEmail());
@@ -68,6 +69,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
                     return new IllegalArgumentException("Invalid email or password");
                 });
 
+        // Check if password matches
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("Password mismatch for email: {}", request.getEmail());
             response.put("status", "FAILED");
@@ -75,18 +77,30 @@ public class CommonLoginServiceImpl implements CommonLoginService {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        String jwtToken = jwtHelper.generateToken(user);
+        // Get the role of the user (for example, "Admin", "Supervisor")
+        Role role = user.getRole();  // Fetch the role from the CommonLogin entity
+        String roleName = (role != null) ? role.getRoleName() : "UNKNOWN"; // Extract the role name
 
+        // Generate JWT Token
+        String jwtToken = jwtHelper.generateToken(user, roleName);  // Pass the roleName as a string
+
+        // Prepare the response map
         response.put("status", "SUCCESS");
-        response.put("message", "Login successful");
         response.put("userId", user.getUserId());
         response.put("email", user.getEmail());
-        response.put("role", user.getRole().getRoleName());
+        response.put("role", roleName);  // Include role in the response
+
+        // Dynamically set the login success message based on role
+        String loginMessage = roleName + " login successful";
+        response.put("message", loginMessage);  // "Admin login successful", "Supervisor login successful", etc.
+
+        // Include the JWT token in the response
         response.put("token", jwtToken);
 
-        log.info("Login successful for userId: {} with role: {}", user.getUserId(), user.getRole().getRoleName());
+        log.info("Login successful for userId: {} with role: {}", user.getUserId(), roleName);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     // Super-admin register
     @Transactional
@@ -113,13 +127,22 @@ public class CommonLoginServiceImpl implements CommonLoginService {
             // Encrypt the password
             String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
 
-            // Fetch or create the ADMIN role
-            Role adminRole = roleRepository.findByRoleName("ADMIN")
-                    .orElseGet(() -> {
-                        Role newRole = new Role();
-                        newRole.setRoleName("ADMIN");
-                        return roleRepository.save(newRole);
-                    });
+            // Fetch the role object from DTO
+            Role role = superAdminDto.getRole();
+
+            // Validate if role exists in DB
+            if (role == null || role.getId() == null) {
+                response.put("status", "FAILED");
+                response.put("message", "Role cannot be null");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+
+            Optional<Role> existingRole = roleRepository.findById(role.getId());
+            if (existingRole.isEmpty()) {
+                response.put("status", "FAILED");
+                response.put("message", "Role with ID " + role.getId() + " does not exist");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
 
             // Check if a user with the same email already exists
             Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
@@ -134,7 +157,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
             CommonLogin superAdmin = new CommonLogin();
             superAdmin.setEmail(superAdminDto.getEmail());
             superAdmin.setPassword(encryptedPassword);
-            superAdmin.setRole(adminRole);
+            superAdmin.setRole(existingRole.get());  // Set the role from DB
 
             CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
 

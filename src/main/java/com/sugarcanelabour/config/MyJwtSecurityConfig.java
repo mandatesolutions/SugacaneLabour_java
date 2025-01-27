@@ -72,11 +72,11 @@ public class MyJwtSecurityConfig {
 								
 								
 							
-								"sclm/labor/district/getAllDistricts/**", 
+								"/sclm/labor/district/getAllDistricts/**", 
 								
-								"sclm/labor/user/forgetPassword/{emailId}", "sclm/labor/user/validatePassword",
+								"/sclm/labor/user/forgetPassword/{emailId}", "/sclm/labor/user/validatePassword",
 								
-								"sclm/admin/register-supervisor"
+								"/sclm/admin/register-supervisor"
 								
 								)
 

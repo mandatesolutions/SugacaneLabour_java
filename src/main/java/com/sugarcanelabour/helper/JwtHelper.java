@@ -31,58 +31,116 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtHelper {
 
-	 private String SECRET_KEY = "my-very-secret-and-long-key-which-is-32-bytes";
+	// private String SECRET_KEY = "my-very-secret-and-long-key-which-is-32-bytes";
+	 
+	 @Value("${jwt.privateKey.path}")
+	    private String privateKeyPath;
 
-	    private Key getSigningKey() {
-	        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+	    @Value("${jwt.publicKey.path}")
+	    private String publicKeyPath;
+
+	    // Private key method
+	    private RSAPrivateKey getPrivateKey() {
+	        try {
+	            StringBuilder pemContent = new StringBuilder();
+	            try (BufferedReader reader = new BufferedReader(new FileReader(privateKeyPath))) {
+	                String line;
+	                while ((line = reader.readLine()) != null) {
+	                    if (!line.startsWith("-----")) {
+	                        pemContent.append(line);
+	                    }
+	                }
+	            }
+
+	            byte[] privateKeyBytes = java.util.Base64.getDecoder().decode(pemContent.toString());
+	            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+	            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+	            return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+	        } catch (Exception e) {
+	            throw new AuthenticationException("Error loading private key: " + e.getMessage());
+	        }
 	    }
 
+	    // Public key method
+	    private RSAPublicKey getPublicKey() {
+	        try {
+	            File publicKeyFile = new File(publicKeyPath);
+	            if (!publicKeyFile.exists()) {
+	                throw new AuthenticationException("Public key file not found at path: " + publicKeyPath);
+	            }
+
+	            byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+	            String keyContent = new String(publicKeyBytes).replaceAll("\\n", "").replaceAll("-----\\w+ PUBLIC KEY-----", "");
+	            byte[] decodedKey = java.util.Base64.getDecoder().decode(keyContent);
+
+	            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedKey);
+	            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+	            return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+	        } catch (Exception e) {
+	            throw new AuthenticationException("Error loading public key: " + e.getMessage());
+	        }
+	    }
+
+	    // Extract the username from the JWT
 	    public String extractUsername(String token) {
 	        return extractClaim(token, Claims::getSubject);
 	    }
 
+	    // Extract the user ID from the JWT
 	    public Long extractUserId(String token) {
 	        return extractClaim(token, claims -> Long.valueOf(claims.get("userId").toString()));
 	    }
 
+	    // Extract the expiration date from the JWT
 	    public Date extractExpiration(String token) {
 	        return extractClaim(token, Claims::getExpiration);
 	    }
 
+	    // Extract claims from the JWT
 	    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
 	        final Claims claims = extractAllClaims(token);
 	        return claimsResolver.apply(claims);
 	    }
 
+	    // Extract all claims from the JWT
 	    public Claims extractAllClaims(String token) {
-	        return Jwts.parser().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+	        try {
+	            return Jwts.parser().setSigningKey(getPublicKey()) // Use public key for verification
+	                    .build().parseClaimsJws(token).getBody();
+	        } catch (Exception e) {
+	            throw new AuthenticationException("Invalid JWT token: " + e.getMessage());
+	        }
 	    }
 
+	    // Check if the token has expired
 	    private Boolean isTokenExpired(String token) {
 	        return extractExpiration(token).before(new Date());
 	    }
 
-	    public String generateToken(CommonLogin commonLogin) {
+	    // Generate the JWT token
+	    public String generateToken(CommonLogin userDetails, String userStatus) {
 	        Map<String, Object> claims = new HashMap<>();
-	        claims.put("userId", commonLogin.getUserId());
-	        claims.put("role", commonLogin.getRole().getRoleName()); // Assuming you have a Role entity with role name
+	        if ("IN-ACTIVE".equalsIgnoreCase(userStatus)) {
+	            throw new AuthenticationException("User account is IN-ACTIVE. Token cannot be generated.");
+	        }
+	        claims.put("userId", userDetails.getUserId());
+	        claims.put("role", userDetails.getRole().getRoleName());  // Add role to claims
 
-	        return createToken(claims, commonLogin.getEmail());
+	        return createToken(claims, userDetails.getEmail());
 	    }
 
+	    // Create JWT token using RS256 and private key for signing
 	    private String createToken(Map<String, Object> claims, String subject) {
-	        return Jwts.builder()
-	                .setClaims(claims)
-	                .setSubject(subject)
-	                .setIssuedAt(new Date(System.currentTimeMillis()))
-	                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 5)) // 5 days expiration
-	                .signWith(getSigningKey(), io.jsonwebtoken.SignatureAlgorithm.HS256)
-	                .compact();
+	        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+	                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 15)) // 15 days expiration
+	                .signWith(getPrivateKey(), SignatureAlgorithm.RS256).compact();
 	    }
 
+	    // Validate the JWT token
 	    public Boolean validateToken(String token, UserDetails userDetails) {
 	        final String username = extractUsername(token);
 	        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
 	    }
+
 
 }
