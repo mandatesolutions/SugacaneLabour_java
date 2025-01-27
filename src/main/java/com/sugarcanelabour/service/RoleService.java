@@ -2,18 +2,22 @@ package com.sugarcanelabour.service;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
 import com.sugarcanelabour.entity.Role;
+import com.sugarcanelabour.helper.ApiResponse;
 
 public interface RoleService {
 
-	List<Role> getAllRoles();
+	ApiResponse<List<Role>> getAllRoles();
 
-	Role createRole(Role role);
 
-	Role getRoleById(Long id);
+	ResponseEntity<ApiResponse<Role>> getRoleById(Long id);
 	
-	Role updateRole(Long id, Role role);
+	ResponseEntity<ApiResponse<String>> updateRole(Long id, Role role);
 
-	void deleteRole(Long id);
+	ResponseEntity<ApiResponse<String>> deleteRole(Long id);
+
+	ResponseEntity<ApiResponse<String>> addRole(Role role);
 	
 }

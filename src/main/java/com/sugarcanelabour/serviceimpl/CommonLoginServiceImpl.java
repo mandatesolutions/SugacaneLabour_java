@@ -1,18 +1,24 @@
 package com.sugarcanelabour.serviceimpl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.sugarcanelabour.Model.RegistrationDto;
-import com.sugarcanelabour.Model.SuperAdminRegistrationDto;
-import com.sugarcanelabour.Repository.CommonLoginRepository;
-import com.sugarcanelabour.Repository.RoleRepository;
-import com.sugarcanelabour.Repository.SupervisorDetailsRepository;
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.Role;
 import com.sugarcanelabour.entity.SupervisorDetails;
+import com.sugarcanelabour.model.RegistrationDto;
+import com.sugarcanelabour.model.SuperAdminRegistrationDto;
+import com.sugarcanelabour.repository.CommonLoginRepository;
+import com.sugarcanelabour.repository.RoleRepository;
+import com.sugarcanelabour.repository.SupervisorDetailsRepository;
 import com.sugarcanelabour.service.CommonLoginService;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -57,23 +63,51 @@ public class CommonLoginServiceImpl implements CommonLoginService {
     //super-admin register
     
     @Override
-    public CommonLogin registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
-        // Encrypt the password
-        String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
+    @Transactional
+    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
+        Map<String, Object> response = new HashMap<>();
 
-        // Create a new Role for SUPER_ADMIN
-        Role ROLE_ADMIN  = new Role();
-        ROLE_ADMIN.setRoleName("ADMIN"); // Set the role name
+        try {
+            // Validate password
+            if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
+                response.put("status", "failure");
+                response.put("message", "Password cannot be null or empty");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
 
-        // Create the CommonLogin object for the super admin
-        CommonLogin AdminLogin = new CommonLogin();
-        AdminLogin.setEmail(superAdminDto.getEmail());
-        AdminLogin.setPassword(encryptedPassword);
-        AdminLogin.setRole(ROLE_ADMIN);  // Associate the dynamically created role
+            // Encrypt the password
+            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
 
-        // Save the super admin login
-        return loginRepository.save(AdminLogin);
+            // Retrieve or create the ADMIN role
+            Role adminRole = roleRepository.findByRoleName("ADMIN").orElseGet(() -> {
+                Role newRole = new Role();
+                newRole.setRoleName("ADMIN");
+                return roleRepository.save(newRole);
+            });
+
+            // Create the CommonLogin object for the super admin
+            CommonLogin adminLogin = new CommonLogin();
+            adminLogin.setEmail(superAdminDto.getEmail());
+            adminLogin.setPassword(encryptedPassword);
+            adminLogin.setRole(adminRole);
+
+            // Save the super admin login
+            CommonLogin savedAdmin = loginRepository.save(adminLogin);
+
+            // Prepare response
+            response.put("status", "success");
+            response.put("message", "Super Admin registered successfully");
+            response.put("data", savedAdmin);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            response.put("status", "failure");
+            response.put("message", "Super Admin registration failed: " + e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+
      // supervisor register
 	  @Override
 	    public CommonLogin registerSupervisor(RegistrationDto supervisorDto) {

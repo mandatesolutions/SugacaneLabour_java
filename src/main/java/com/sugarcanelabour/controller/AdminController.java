@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sugarcanelabour.Model.RegistrationDto;
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/sclm/admin")
 public class AdminController {
 	
 	 @Autowired

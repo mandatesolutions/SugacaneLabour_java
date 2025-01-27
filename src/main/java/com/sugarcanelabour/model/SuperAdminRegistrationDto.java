@@ -1,4 +1,4 @@
-package com.sugarcanelabour.Model;
+package com.sugarcanelabour.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +12,7 @@ public class SuperAdminRegistrationDto {
 	 @Email(message = "Invalid email format")
 	 private String Email;
 	
-	 @NotBlank(message = "password cannot be blank")
+
 	 private String password;
 
 }

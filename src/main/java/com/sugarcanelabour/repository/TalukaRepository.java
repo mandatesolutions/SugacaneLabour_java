@@ -1,4 +1,4 @@
-package com.sugarcanelabour.Repository;
+package com.sugarcanelabour.repository;
 
 import java.util.List;
 

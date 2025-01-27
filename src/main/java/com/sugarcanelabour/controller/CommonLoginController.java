@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sugarcanelabour.Model.LoginRequest;
-import com.sugarcanelabour.Model.RegistrationDto;
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.model.LoginRequest;
+import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
 @RestController
