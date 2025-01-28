@@ -58,7 +58,7 @@ public class RoleServiceImpl implements RoleService{
 
 		// get All roles
 
-		@Cacheable(value = "roles", key = "'allRoles'")
+	//	@Cacheable(value = "roles", key = "'allRoles'")
 		@Transactional
 		@Override
 		public ApiResponse<List<Role>> getAllRoles() {

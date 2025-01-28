@@ -23,12 +23,11 @@ public class SupervisorController {
 	
 	@Autowired
 	private CommonLoginService commonLoginService;
-//	
-//	@Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by a supervisor")
-//	@PostMapping("/register-coworker")
-//	ResponseEntity<Object> registerCoworker(@Valid @RequestBody RegistrationDto registrationDto) throws Exception{
-//	    log.info("***** Inside - CoworkerController - registerCoworker *****");
-//	    return ResponseEntity.ok(commonLoginService.registerCoworker(registrationDto));
-//	}
+	
+	 @Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by the supervisor")
+	    @PostMapping("/register-coworker")
+	    ResponseEntity<Object> registerCoworker(@Valid @RequestBody RegistrationDto coworkerDto) {
+	        return commonLoginService.registerCoworker(coworkerDto);
+	    }
 
 }

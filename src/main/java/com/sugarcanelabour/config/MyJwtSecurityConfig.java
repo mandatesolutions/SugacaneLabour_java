@@ -68,7 +68,7 @@ public class MyJwtSecurityConfig {
 						.permitAll()
 						.requestMatchers("/v3/api-docs/**", "/stomp/**", "/wss/**", "/configuration/ui",
 								"/swagger-resources/**", "/configuration/security", "/swagger-ui/**", "/webjars/**",
-								"/sclm/labor/login","/sclm/labor/super-admin/register","/sclm/labor/add",
+								"/sclm/labor/login","/sclm/labor/super-admin/register","/sclm/labor/add","/sclm/roles/add",
 								
 								
 							

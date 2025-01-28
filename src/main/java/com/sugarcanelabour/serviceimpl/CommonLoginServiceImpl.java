@@ -102,152 +102,224 @@ public class CommonLoginServiceImpl implements CommonLoginService {
     }
 
 
-//    @Transactional
-//    @Override
-//    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
-//        log.info("Registering Super Admin with email: {}", superAdminDto.getEmail());
-//
-//        Map<String, Object> response = new HashMap<>();
-//
-//        // Validate email, password, and roleName
-//        if (superAdminDto.getEmail() == null || superAdminDto.getEmail().isEmpty()) {
-//            response.put("status", "FAILED");
-//            response.put("message", "Email cannot be null or empty");
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//
-//        if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
-//            response.put("status", "FAILED");
-//            response.put("message", "Password cannot be null or empty");
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//
-//        if (superAdminDto.getRoleName() == null || superAdminDto.getRoleName().isEmpty()) {
-//            response.put("status", "FAILED");
-//            response.put("message", "Role name cannot be null or empty");
-//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//        }
-//
-//        try {
-//            // Encrypt the password
-//            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
-//
-//            // Fetch role by roleName
-//            Optional<Role> roleOptional = roleRepository.findByRoleName(superAdminDto.getRoleName());
-//            if (roleOptional.isEmpty()) {
-//                response.put("status", "FAILED");
-//                response.put("message", "Role '" + superAdminDto.getRoleName() + "' does not exist");
-//                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//            }
-//
-//            Role role = roleOptional.get();
-//
-//            // Check if a user with the same email already exists
-//            Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
-//            if (existingUser.isPresent()) {
-//                log.warn("Super Admin with email {} already exists", superAdminDto.getEmail());
-//                response.put("status", "FAILED");
-//                response.put("message", "Super Admin with this email already exists");
-//                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-//            }
-//
-//            // Create and save the super admin user
-//            CommonLogin superAdmin = new CommonLogin();
-//            superAdmin.setEmail(superAdminDto.getEmail());
-//            superAdmin.setPassword(encryptedPassword);
-//            superAdmin.setRole(role); // Map the role entity
-//
-//            CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
-//
-//            response.put("status", "SUCCESS");
-//            response.put("message", "Super Admin registered successfully");
-//            response.put("userId", savedSuperAdmin.getUserId());
-//            response.put("email", savedSuperAdmin.getEmail());
-//            response.put("role", savedSuperAdmin.getRole().getRoleName());
-//
-//            log.info("Super Admin registered successfully with email: {}", superAdminDto.getEmail());
-//            return new ResponseEntity<>(response, HttpStatus.CREATED);
-//
-//        } catch (Exception e) {
-//            log.error("Error while registering Super Admin: {}", e.getMessage());
-//            response.put("status", "FAILED");
-//            response.put("message", "Super Admin registration failed: " + e.getMessage());
-//            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+    @Override
+    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Encrypt the password
+            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
 
+            // Fetch the role by ID
+            Optional<Role> roleOptional = roleRepository.findById(superAdminDto.getRoleId());
+            if (roleOptional.isEmpty()) {
+                response.put("status", "FAILED");
+                response.put("message", "Role not found");
+                return ResponseEntity.badRequest().body(response);
+            }
 
+            Role role = roleOptional.get();
 
+            // Check if email already exists
+            Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
+            if (existingUser.isPresent()) {
+                response.put("status", "FAILED");
+                response.put("message", "Super Admin with this email already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create and save the Super Admin
+            CommonLogin superAdmin = new CommonLogin();
+            superAdmin.setEmail(superAdminDto.getEmail());
+            superAdmin.setPassword(encryptedPassword);
+            superAdmin.setRole(role); // Assign the role
+
+            CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
+
+            response.put("status", "SUCCESS");
+            response.put("message", "Super Admin registered successfully");
+            response.put("userId", savedSuperAdmin.getUserId());
+            response.put("email", savedSuperAdmin.getEmail());
+            response.put("role", savedSuperAdmin.getRole().getRoleName());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "FAILED");
+            response.put("message", "Error while registering Super Admin: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
 
 
 
 
 
      // supervisor register
-	  @Override
-	    public CommonLogin registerSupervisor(RegistrationDto supervisorDto) {
-	        // Create the CommonLogin for the supervisor
-	        CommonLogin commonLogin = new CommonLogin();
-	        commonLogin.setEmail(supervisorDto.getEmail());
-	        commonLogin.setMobileNo(supervisorDto.getMobileNo());
-	        commonLogin.setPassword(supervisorDto.getPassword());
-	        
 
-	        // Save the CommonLogin entity
-	        CommonLogin savedCommonLogin = loginRepository.save(commonLogin);
+    @Override
+    public ResponseEntity<Object> registerSupervisor(RegistrationDto supervisorDto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Encrypt the password
+            String encryptedPassword = passwordEncoder.encode(supervisorDto.getPassword());
 
-	        // Create the SupervisorDetails entity
-	        SupervisorDetails supervisorDetails = new SupervisorDetails();
-	        supervisorDetails.setFirstName(supervisorDto.getFirstName());
-	        supervisorDetails.setLastName(supervisorDto.getLastName());
-	        supervisorDetails.setGender(supervisorDto.getGender());
-	        supervisorDetails.setBloodGroup(supervisorDto.getBloodGroup());
-	        supervisorDetails.setAddress(supervisorDto.getAddress());
-	        supervisorDetails.setCommonLogin(savedCommonLogin);  // Link to the CommonLogin
+            // Fetch the role from the roles table based on roleId from DTO
+            Optional<Role> roleOptional = roleRepository.findById(supervisorDto.getRoleId());
+            if (roleOptional.isEmpty()) {
+                response.put("status", "FAILED");
+                response.put("message", "Role not found");
+                return ResponseEntity.badRequest().body(response);
+            }
 
-	        // Save the SupervisorDetails entity
-	        supervisorDetailsRepository.save(supervisorDetails);
+            Role role = roleOptional.get();
 
-	        return savedCommonLogin;
-	    }
-//	   @Override
-//	    public CommonLogin registerSupervisor(RegistrationDto supervisorDto, String role) {
-//	        // Admin can register supervisors
-//	        if (!role.equals("ROLE_ADMIN")) {
-//	            log.warn("Unauthorized access attempt. Only admin can register supervisors.");
-//	            throw new IllegalArgumentException("Only admin can register supervisors");
-//	        }
-//
-//	        // Create the CommonLogin for the supervisor
-//	        CommonLogin commonLogin = new CommonLogin();
-//	        commonLogin.setEmail(supervisorDto.getEmail());
-//	        commonLogin.setMobileNo(supervisorDto.getMobileNo());
-//	        
-//	        // Encode the password before saving it
-//	        String encodedPassword = passwordEncoder.encode(supervisorDto.getPassword());
-//	        commonLogin.setPassword(encodedPassword);
-//	        
-//	        // Set the role for the supervisor
-//	        commonLogin.setRole("ROLE_SUPERVISOR");
-//
-//	        // Save the CommonLogin entity
-//	        CommonLogin savedCommonLogin = loginRepository.save(commonLogin);
-//
-//	        // Create the SupervisorDetails entity
-//	        SupervisorDetails supervisorDetails = new SupervisorDetails();
-//	        supervisorDetails.setFirstName(supervisorDto.getFirstName());
-//	        supervisorDetails.setLastName(supervisorDto.getLastName());
-//	        supervisorDetails.setGender(supervisorDto.getGender());
-//	        supervisorDetails.setBloodGroup(supervisorDto.getBloodGroup());
-//	        supervisorDetails.setAddress(supervisorDto.getAddress());
-//	        supervisorDetails.setCommonLogin(savedCommonLogin);  // Link to the CommonLogin
-//
-//	        // Save the SupervisorDetails entity
-//	        supervisorDetailsRepository.save(supervisorDetails);
-//
-//	        return savedCommonLogin;
-//	    }
-//	  
+            // Check if the supervisor email already exists
+            Optional<CommonLogin> existingSupervisor = loginRepository.findByEmail(supervisorDto.getEmail());
+            if (existingSupervisor.isPresent()) {
+                response.put("status", "FAILED");
+                response.put("message", "Supervisor with this email already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create and save the new supervisor
+            CommonLogin supervisor = new CommonLogin();
+            supervisor.setEmail(supervisorDto.getEmail());
+            supervisor.setMobileNo(supervisorDto.getMobileNo());
+            supervisor.setPassword(encryptedPassword);
+            supervisor.setRole(role); // Assign the role dynamically based on roleId
+
+            CommonLogin savedSupervisor = loginRepository.save(supervisor);
+
+            // Add response fields, including RegistrationDto fields
+            response.put("status", "SUCCESS");
+            response.put("message", "Supervisor registered successfully");
+            response.put("userId", savedSupervisor.getUserId());
+            response.put("email", savedSupervisor.getEmail());
+            response.put("role", savedSupervisor.getRole().getRoleName());
+            response.put("firstName", supervisorDto.getFirstName());
+            response.put("lastName", supervisorDto.getLastName());
+            response.put("gender", supervisorDto.getGender());
+            response.put("bloodGroup", supervisorDto.getBloodGroup());
+            response.put("address", supervisorDto.getAddress());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "FAILED");
+            response.put("message", "Error while registering Supervisor: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    
+    //register co-worker
+
+    @Override
+    public ResponseEntity<Object> registerCoworker(RegistrationDto coworkerDto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Encrypt the password
+            String encryptedPassword = passwordEncoder.encode(coworkerDto.getPassword());
+
+            // Fetch the role from the DTO (assuming the role is passed via the DTO)
+            Optional<Role> roleOptional = roleRepository.findById(coworkerDto.getRoleId());
+            if (roleOptional.isEmpty()) {
+                response.put("status", "FAILED");
+                response.put("message", "Role not found");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Role role = roleOptional.get();
+
+            // Check if the coworker's email already exists
+            Optional<CommonLogin> existingCoworker = loginRepository.findByEmail(coworkerDto.getEmail());
+            if (existingCoworker.isPresent()) {
+                response.put("status", "FAILED");
+                response.put("message", "Coworker with this email already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create and save the new coworker
+            CommonLogin coworker = new CommonLogin();
+            coworker.setEmail(coworkerDto.getEmail());
+            coworker.setMobileNo(coworkerDto.getMobileNo());
+            coworker.setPassword(encryptedPassword);
+            coworker.setRole(role); // Assign the role from DTO
+
+            CommonLogin savedCoworker = loginRepository.save(coworker);
+
+            // Add response fields
+            response.put("status", "SUCCESS");
+            response.put("message", "Coworker registered successfully");
+            response.put("userId", savedCoworker.getUserId());
+            response.put("email", savedCoworker.getEmail());
+            response.put("role", savedCoworker.getRole().getRoleName());
+            response.put("firstName", coworkerDto.getFirstName());
+            response.put("lastName", coworkerDto.getLastName());
+            response.put("gender", coworkerDto.getGender());
+            response.put("bloodGroup", coworkerDto.getBloodGroup());
+            response.put("address", coworkerDto.getAddress());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "FAILED");
+            response.put("message", "Error while registering Coworker: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+
+    @Override
+    public ResponseEntity<Object> registerLaborer(RegistrationDto laborerDto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Encrypt the password
+            String encryptedPassword = passwordEncoder.encode(laborerDto.getPassword());
+
+            // Fetch the laborer role from the DTO
+            Optional<Role> roleOptional = roleRepository.findById(laborerDto.getRoleId());
+            if (roleOptional.isEmpty()) {
+                response.put("status", "FAILED");
+                response.put("message", "Role not found");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Role role = roleOptional.get();
+
+            // Check if the laborer's email already exists
+            Optional<CommonLogin> existingLaborer = loginRepository.findByEmail(laborerDto.getEmail());
+            if (existingLaborer.isPresent()) {
+                response.put("status", "FAILED");
+                response.put("message", "Laborer with this email already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create and save the new laborer
+            CommonLogin laborer = new CommonLogin();
+            laborer.setEmail(laborerDto.getEmail());
+            laborer.setMobileNo(laborerDto.getMobileNo());
+            laborer.setPassword(encryptedPassword);
+            laborer.setRole(role); // Assign role from DTO
+
+            CommonLogin savedLaborer = loginRepository.save(laborer);
+
+            // Add response fields
+            response.put("status", "SUCCESS");
+            response.put("message", "Laborer registered successfully");
+            response.put("userId", savedLaborer.getUserId());
+            response.put("email", savedLaborer.getEmail());
+            response.put("role", savedLaborer.getRole().getRoleName());
+            response.put("firstName", laborerDto.getFirstName());
+            response.put("lastName", laborerDto.getLastName());
+            response.put("gender", laborerDto.getGender());
+            response.put("bloodGroup", laborerDto.getBloodGroup());
+            response.put("address", laborerDto.getAddress());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "FAILED");
+            response.put("message", "Error while registering Laborer: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
 
 	
 

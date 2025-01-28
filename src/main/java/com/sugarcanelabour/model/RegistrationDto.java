@@ -1,5 +1,10 @@
 package com.sugarcanelabour.model;
 
+import com.sugarcanelabour.entity.Role;
+
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -34,6 +39,8 @@ public class RegistrationDto {
     @NotBlank(message = "Address cannot be blank")
     private String address;
 	    
+    @NotBlank(message = "Role ID cannot be blank")
+    private Long roleId;  
 	    
 
 }
