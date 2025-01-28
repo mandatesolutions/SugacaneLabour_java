@@ -1,5 +1,10 @@
 package com.sugarcanelabour.model;
 
+import com.sugarcanelabour.entity.Role;
+
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -15,8 +20,9 @@ public class LoginRequest {
 	
 	@NotBlank(message = "Password cannot be blank")
     private String password;
-	    
-	
-    private String role;
+	  
+	 @ManyToOne(fetch = FetchType.LAZY)
+	 @JoinColumn(name = "Roles")
+	private Role role;
 	 
 }

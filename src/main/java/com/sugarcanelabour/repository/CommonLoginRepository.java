@@ -13,4 +13,6 @@ public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long>{
 
 	 
 	  Optional<CommonLogin> findByEmail(String email);
+
+	CommonLogin findByMobileNo(String identifier);
 }

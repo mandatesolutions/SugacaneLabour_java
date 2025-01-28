@@ -3,6 +3,9 @@ package com.sugarcanelabour.model;
 
 import com.sugarcanelabour.entity.Role;
 
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,7 +26,7 @@ public class SuperAdminRegistrationDto {
 	 @NotEmpty(message = "Password cannot be null or empty")
 	 private String password;
 
-	 
-	 private Role role;
+	 @NotNull(message = "Role cannot be null")
+	    private Long roleId;
 	 
 }

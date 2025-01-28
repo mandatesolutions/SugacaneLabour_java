@@ -17,15 +17,43 @@ public interface CommonLoginService {
 
 	//CommonLogin registerSupervisor(RegistrationDto supervisorDto, String role);
 
-	CommonLogin registerSupervisor(RegistrationDto supervisorDto);
+	
 
 
-
-	ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
+	//ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto);
 
 
 
 	ResponseEntity<Object> login(@Valid LoginRequest loginRequest) throws Exception;
+
+
+
+	//Object registerCoworker(@Valid RegistrationDto registrationDto);
+
+
+
+//	CommonLogin registerLaborer(@Valid RegistrationDto registrationDto);
+
+
+
+	CommonLogin registerSupervisor(@Valid RegistrationDto registrationDto);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
 
 
 

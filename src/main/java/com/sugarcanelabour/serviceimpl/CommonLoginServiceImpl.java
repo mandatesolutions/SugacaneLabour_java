@@ -102,81 +102,80 @@ public class CommonLoginServiceImpl implements CommonLoginService {
     }
 
 
-    // Super-admin register
-    @Transactional
-    @Override
-    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
-        log.info("Registering Super Admin with email: {}", superAdminDto.getEmail());
+//    @Transactional
+//    @Override
+//    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
+//        log.info("Registering Super Admin with email: {}", superAdminDto.getEmail());
+//
+//        Map<String, Object> response = new HashMap<>();
+//
+//        // Validate email, password, and roleName
+//        if (superAdminDto.getEmail() == null || superAdminDto.getEmail().isEmpty()) {
+//            response.put("status", "FAILED");
+//            response.put("message", "Email cannot be null or empty");
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
+//            response.put("status", "FAILED");
+//            response.put("message", "Password cannot be null or empty");
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        if (superAdminDto.getRoleName() == null || superAdminDto.getRoleName().isEmpty()) {
+//            response.put("status", "FAILED");
+//            response.put("message", "Role name cannot be null or empty");
+//            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        try {
+//            // Encrypt the password
+//            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
+//
+//            // Fetch role by roleName
+//            Optional<Role> roleOptional = roleRepository.findByRoleName(superAdminDto.getRoleName());
+//            if (roleOptional.isEmpty()) {
+//                response.put("status", "FAILED");
+//                response.put("message", "Role '" + superAdminDto.getRoleName() + "' does not exist");
+//                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//            }
+//
+//            Role role = roleOptional.get();
+//
+//            // Check if a user with the same email already exists
+//            Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
+//            if (existingUser.isPresent()) {
+//                log.warn("Super Admin with email {} already exists", superAdminDto.getEmail());
+//                response.put("status", "FAILED");
+//                response.put("message", "Super Admin with this email already exists");
+//                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+//            }
+//
+//            // Create and save the super admin user
+//            CommonLogin superAdmin = new CommonLogin();
+//            superAdmin.setEmail(superAdminDto.getEmail());
+//            superAdmin.setPassword(encryptedPassword);
+//            superAdmin.setRole(role); // Map the role entity
+//
+//            CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
+//
+//            response.put("status", "SUCCESS");
+//            response.put("message", "Super Admin registered successfully");
+//            response.put("userId", savedSuperAdmin.getUserId());
+//            response.put("email", savedSuperAdmin.getEmail());
+//            response.put("role", savedSuperAdmin.getRole().getRoleName());
+//
+//            log.info("Super Admin registered successfully with email: {}", superAdminDto.getEmail());
+//            return new ResponseEntity<>(response, HttpStatus.CREATED);
+//
+//        } catch (Exception e) {
+//            log.error("Error while registering Super Admin: {}", e.getMessage());
+//            response.put("status", "FAILED");
+//            response.put("message", "Super Admin registration failed: " + e.getMessage());
+//            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
-        Map<String, Object> response = new HashMap<>();
-
-        // Validate email and password
-        if (superAdminDto.getEmail() == null || superAdminDto.getEmail().isEmpty()) {
-            response.put("status", "FAILED");
-            response.put("message", "Email cannot be null or empty");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
-            response.put("status", "FAILED");
-            response.put("message", "Password cannot be null or empty");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            // Encrypt the password
-            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
-
-            // Fetch the role object from DTO
-            Role role = superAdminDto.getRole();
-
-            // Validate if role exists in DB
-            if (role == null || role.getId() == null) {
-                response.put("status", "FAILED");
-                response.put("message", "Role cannot be null");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            Optional<Role> existingRole = roleRepository.findById(role.getId());
-            if (existingRole.isEmpty()) {
-                response.put("status", "FAILED");
-                response.put("message", "Role with ID " + role.getId() + " does not exist");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            // Check if a user with the same email already exists
-            Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
-            if (existingUser.isPresent()) {
-                log.warn("Super Admin with email {} already exists", superAdminDto.getEmail());
-                response.put("status", "FAILED");
-                response.put("message", "Super Admin with this email already exists");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            // Create and save the super admin user
-            CommonLogin superAdmin = new CommonLogin();
-            superAdmin.setEmail(superAdminDto.getEmail());
-            superAdmin.setPassword(encryptedPassword);
-            superAdmin.setRole(existingRole.get());  // Set the role from DB
-
-            CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
-
-            response.put("status", "SUCCESS");
-            response.put("message", "Super Admin registered successfully");
-            response.put("userId", savedSuperAdmin.getUserId());
-            response.put("email", savedSuperAdmin.getEmail());
-            response.put("role", savedSuperAdmin.getRole().getRoleName());
-
-            log.info("Super Admin registered successfully with email: {}", superAdminDto.getEmail());
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            log.error("Error while registering Super Admin: {}", e.getMessage());
-            response.put("status", "FAILED");
-            response.put("message", "Super Admin registration failed: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
 
 
@@ -249,5 +248,8 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 //	        return savedCommonLogin;
 //	    }
 //	  
-	  
+
+	
+
+	
 }

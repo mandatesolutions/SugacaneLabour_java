@@ -10,6 +10,7 @@ import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.config.CustomJwtUserDetail;
 import com.sugarcanelabour.repository.CommonLoginRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -18,6 +19,7 @@ public class CustomJwtUserDetailService implements UserDetailsService{
 
 	@Autowired
 	private CommonLoginRepository commonLoginRepository;
+	@Transactional
 	 @Override
 	    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 	        if (log.isInfoEnabled()) {
@@ -29,11 +31,11 @@ public class CustomJwtUserDetailService implements UserDetailsService{
 	                .orElseThrow(() -> new UsernameNotFoundException("User not found with identifier: " + identifier));
 
 	        
-	        // If no user found by email, try searching by mobile number or password
-//	        if (commonLogin == null) {
-//	            commonLogin = commonLoginRepository.findByMobileNo(identifier);
-//	        }
-//	        
+	      //   If no user found by email, try searching by mobile number or password
+	        if (commonLogin == null) {
+	            commonLogin = commonLoginRepository.findByMobileNo(identifier);
+	        }
+	        
 	        // If user is still not found, throw exception
 	        if (commonLogin == null) {
 	            throw new UsernameNotFoundException("User not found with identifier: " + identifier);

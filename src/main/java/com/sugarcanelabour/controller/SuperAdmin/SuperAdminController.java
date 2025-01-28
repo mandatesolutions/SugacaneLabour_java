@@ -38,14 +38,12 @@ public class SuperAdminController {
 
 
 
-		@Operation(summary = "Super Admin Registration API", description = "This API is used to register a super admin")
-		  @PostMapping("/super-admin/register")
-		  public ResponseEntity<Object> registerSuperAdmin( @Valid @RequestBody SuperAdminRegistrationDto superAdminDto) {
-		      log.info("***** Inside - SuperAdminController - registerSuperAdmin *****");
-		      // Directly call the service layer for further processing
-		      return ResponseEntity.ok(commonLoginService.registerSuperAdmin(superAdminDto));
-		  }
-
+//	  @Operation(summary = "Register Super Admin API", description = "This API is used to register a super admin")
+//	    @PostMapping("/register")
+//	    public ResponseEntity<Object> registerSuperAdmin(@Valid @RequestBody SuperAdminRegistrationDto superAdminDto) {
+//	        return ResponseEntity.ok(commonLoginService.registerSuperAdmin(superAdminDto));
+//	    }
+//
 
 
 }

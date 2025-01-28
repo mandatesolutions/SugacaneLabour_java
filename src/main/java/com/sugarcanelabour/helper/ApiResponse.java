@@ -9,8 +9,14 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiResponse {
+public class ApiResponse<T> {
+	private static final long serialVersionUID = 1L;
 	private String status;
 	private String message;
+	private T data;
 
+	public ApiResponse(T data) {
+		super();
+		this.data = data;
+	}
 }

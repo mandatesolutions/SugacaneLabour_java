@@ -12,10 +12,15 @@ import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
 
 
 @RestController
-@RequestMapping("/sclm/labor")
+@RequestMapping("/sclm/admin")
+@Slf4j
 public class AdminController {
 	
 	 @Autowired
@@ -24,10 +29,15 @@ public class AdminController {
 	    // Endpoint for Admin to register a Supervisor
 	   // Admin registers a supervisor
 	 // Admin registers a supervisor
-	    @PostMapping("/register-supervisor")
-	    public ResponseEntity<CommonLogin> registerSupervisor(@RequestBody RegistrationDto registrationDto) {
-	        // Only admin can register a supervisor
-	        CommonLogin commonLogin = commonLoginService.registerSupervisor(registrationDto);
-	        return ResponseEntity.status(HttpStatus.CREATED).body(commonLogin);
-	    }
+	 @Operation(summary = "Admin Register Supervisor API", description = "This API is used to register a supervisor")
+	 @PostMapping("/register-supervisor")
+	 public ResponseEntity<Object> registerSupervisor(@Valid @RequestBody RegistrationDto registrationDto) {
+	     log.info("***** Inside - SupervisorController - registerSupervisor *****");
+	     
+	     // Call the service to register the supervisor
+	     CommonLogin commonLogin = commonLoginService.registerSupervisor(registrationDto);
+
+	     // Return the response
+	     return ResponseEntity.status(HttpStatus.CREATED).body(commonLogin);
+	 }
 }
