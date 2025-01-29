@@ -45,6 +45,7 @@ public class MyJwtSecurityConfig {
 		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 		return objectMapper;
 	}
+
 	@Autowired
 	private CorsConfigurationSource corsConfigurationSource;
 
@@ -60,29 +61,18 @@ public class MyJwtSecurityConfig {
 		daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
 		return daoAuthenticationProvider;
 	}
-	
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource))
-				.authorizeHttpRequests(authorize -> authorize.requestMatchers("/actuator/health", "/actuator/info")
-						.permitAll()
-						.requestMatchers("/v3/api-docs/**", "/stomp/**", "/wss/**", "/configuration/ui",
-								"/swagger-resources/**", "/configuration/security", "/swagger-ui/**", "/webjars/**",
-								"/sclm/labor/login","/sclm/labor/super-admin/register","/sclm/labor/add","/sclm/roles/add",
-								
-								
-							
-								"/sclm/labor/district/getAllDistricts/**", 
-								
-								"/sclm/labor/user/forgetPassword/{emailId}", "/sclm/labor/user/validatePassword",
-								
-								"/sclm/admin/register-supervisor"
-								
-								)
-
-						.permitAll().requestMatchers("/ws/**", "/stomp/**").permitAll() // Allow WebSocket connections
-						.requestMatchers("/sclm/labor/**").hasRole("USER").requestMatchers("/sclm/labor/**").hasRole("USER").requestMatchers("/sclm/admin/**")
-						.hasRole("ADMIN").anyRequest().authenticated())
+				.authorizeHttpRequests(
+						authorize -> authorize.requestMatchers("/actuator/health", "/actuator/info").permitAll()
+								.requestMatchers("/v3/api-docs/**", "/stomp/**", "/wss/**", "/configuration/ui",
+										"/swagger-resources/**", "/configuration/security", "/swagger-ui/**",
+										"/webjars/**", "/sclm/common-login/login", "/sclm/sup-admin/register",
+										"/sclm/labor/add", "/sclm/admin/register-supervisor")
+								.permitAll().requestMatchers("/sclm/sup-admin/**").hasRole("SUP-ADMIN")
+								.requestMatchers("/sclm/admin/**").hasRole("ADMIN").anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(entryPoint));
 
@@ -90,7 +80,7 @@ public class MyJwtSecurityConfig {
 
 		return http.build();
 	}
-	
+
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
 			throws Exception {

@@ -9,10 +9,9 @@ import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.Role;
 
 @Repository
-public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long>{
+public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long> {
 
-	 
-	  Optional<CommonLogin> findByEmail(String email);
+	Optional<CommonLogin> findByEmail(String email);
 
 	CommonLogin findByMobileNo(String identifier);
 }

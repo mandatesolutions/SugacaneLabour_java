@@ -21,6 +21,7 @@ public class CustomJwtUserDetail implements UserDetails{
 	 @Override
 	    public Collection<? extends GrantedAuthority> getAuthorities() {
 	        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+	        System.out.println("role"+commonLogin.getRole().getRoleName());
 	        authorities.add(new SimpleGrantedAuthority(commonLogin.getRole().getRoleName()));
 	        return authorities;
 	    }

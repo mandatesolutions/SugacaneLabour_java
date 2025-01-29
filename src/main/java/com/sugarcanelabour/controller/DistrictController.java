@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @RestController
-@RequestMapping("/sclm/labor/district")
+@RequestMapping("/sclm/district")
 @Slf4j
 public class DistrictController {
 	

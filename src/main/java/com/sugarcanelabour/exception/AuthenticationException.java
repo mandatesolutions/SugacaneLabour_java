@@ -1,11 +1,11 @@
 package com.sugarcanelabour.exception;
 
-public class AuthenticationException extends RuntimeException{
-	public AuthenticationException(String message) {
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+
+public class AuthenticationException extends RuntimeException {
+	public AuthenticationException(String message, JwtException e) {
 		super(message);
 	}
 
-	public AuthenticationException(String message, Throwable cause) {
-		super(message, cause);
-	}
 }

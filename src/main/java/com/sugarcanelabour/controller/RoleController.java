@@ -45,6 +45,7 @@ public class RoleController {
 
 	// get all roles
 
+	
 	@Operation(summary = "Get All Roles API", description = "This API is used to retrieve all roles")
 	@GetMapping("/all")
 	public ResponseEntity<ApiResponse<List<Role>>> getAllRoles() {

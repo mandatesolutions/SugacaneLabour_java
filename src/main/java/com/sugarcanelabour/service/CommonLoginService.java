@@ -1,10 +1,12 @@
 package com.sugarcanelabour.service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.model.LoginRequest;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
@@ -15,7 +17,7 @@ public interface CommonLoginService {
 
 	
 
-	ResponseEntity<Object> login(@Valid LoginRequest loginRequest) throws Exception;
+	ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid LoginRequest loginRequest) throws Exception;
 
 
 	ResponseEntity<Object> registerSuperAdmin(@Valid SuperAdminRegistrationDto superAdminDto);
