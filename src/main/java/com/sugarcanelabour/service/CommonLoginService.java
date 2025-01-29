@@ -15,45 +15,16 @@ import jakarta.validation.Valid;
 
 public interface CommonLoginService {
 
-	
-
 	ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid LoginRequest loginRequest) throws Exception;
 
-
-	ResponseEntity<Object> registerSuperAdmin(@Valid SuperAdminRegistrationDto superAdminDto);
-
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(@Valid SuperAdminRegistrationDto superAdminDto);
 
 	ResponseEntity<Object> registerSupervisor(@Valid RegistrationDto supervisorDto);
-	
 
 	ResponseEntity<Object> registerCoworker(@Valid RegistrationDto coworkerDto);
 
-
 	ResponseEntity<Object> registerLaborer(@Valid RegistrationDto laborerDto);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
-
-
-
-	//CommonLogin registerSupervisor(RegistrationDto registrationDto);
-
-	
-
-
+	// CommonLogin registerSupervisor(RegistrationDto registrationDto);
 
 }

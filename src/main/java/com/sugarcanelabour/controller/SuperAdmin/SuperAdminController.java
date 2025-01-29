@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
@@ -33,10 +34,14 @@ public class SuperAdminController {
 
 	@Operation(summary = "Register Super Admin API", description = "This API is used to register a super admin")
 	@PostMapping("/register")
-	ResponseEntity<Object> registerSuperAdmin(@Valid @RequestBody SuperAdminRegistrationDto superAdminDto) {
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(
+			@Valid @RequestBody SuperAdminRegistrationDto superAdminDto) {
+		if (log.isInfoEnabled()) {
+			log.info("***** Inside SuperAdminController - registerSuperAdmin *****");
+		}
 		return commonLoginService.registerSuperAdmin(superAdminDto);
 	}
-	
+
 	@GetMapping("/test")
 	ResponseEntity<Object> test() {
 		log.info("***** Inside - UserController - test *****");

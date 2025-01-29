@@ -17,5 +17,7 @@ public class CommonMessages {
 	public static final String CL_EMAIL_NF = "Email not present in the database";
 	public static final String CL_PASSWORD_NV = "Password not valid";
 	public static final String CL_LOGIN_SUCCESSFUL = "User login successfuly";
+	public static final String CL_EMAIL_AE = "Email already exist";
+	public static final String CL_REGISTER_SUCCESSFUL = "Registration successfull";
 	/* CommonLogin */
 }
