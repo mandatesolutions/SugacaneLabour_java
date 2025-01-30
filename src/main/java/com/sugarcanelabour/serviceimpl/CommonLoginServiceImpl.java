@@ -123,8 +123,10 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	
 	}
 	@Override
-	public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(
+			SuperAdminRegistrationDto superAdminDto) {
 		Map<String, Object> response = new HashMap<>();
+<<<<<<< HEAD
 		try {
 
 			// Fetch the role by ID
@@ -163,7 +165,41 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			response.put("status", "FAILED");
 			response.put("message", "Error while registering Super Admin: " + e.getMessage());
 			return ResponseEntity.internalServerError().body(response);
+=======
+		ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+		// Fetch the role by ID
+		Optional<Role> roleOptional = roleRepository.findById(superAdminDto.getRoleId());
+		if (roleOptional.isEmpty()) {
+			resp.setStatus(CommonMessages.FAILED);
+			resp.setMessage(CommonMessages.ROLE_INVALID);
+			return ResponseEntity.badRequest().body(resp);
+>>>>>>> 962f4c893e3c115ff02c6978a4457416930bd1d7
 		}
+		// Check if email already exists
+		Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
+		if (existingUser.isPresent()) {
+			resp.setStatus(CommonMessages.FAILED);
+			resp.setMessage(CommonMessages.CL_EMAIL_AE);
+			return ResponseEntity.badRequest().body(resp);
+		}
+
+		// Create and save the Super Admin
+		CommonLogin superAdmin = new CommonLogin();
+		superAdmin.setEmail(superAdminDto.getEmail());
+		superAdmin.setPassword(passwordEncoder.encode(superAdminDto.getPassword()));
+		superAdmin.setRole(roleOptional.get()); // Assign the role
+		superAdmin.setStatus(UserStatus.ACTIVE);
+
+		CommonLogin savedSuperAdmin = loginRepository.save(superAdmin);
+
+		resp.setStatus(CommonMessages.SUCCESS);
+		resp.setMessage(CommonMessages.CL_REGISTER_SUCCESSFUL);
+		response.put("userId", savedSuperAdmin.getUserId());
+		response.put("email", savedSuperAdmin.getEmail());
+		response.put("role", savedSuperAdmin.getRole().getRoleName());
+		resp.setData(response);
+		return ResponseEntity.ok(resp);
+
 	}
 
 	// supervisor register
