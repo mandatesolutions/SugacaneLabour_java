@@ -103,6 +103,10 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		        SupervisorDetails supervisorDetails = supervisorDetailsOptional.get();
 		        
 		        // Add fields from SupervisorDetails to response
+		        response.put("userId", user.get().getUserId());
+				response.put("email", user.get().getEmail());
+				response.put("role", role); // Include role in the response
+				response.put("token", jwtToken);
 		        response.put("firstName", supervisorDetails.getFirstName());
 		        response.put("lastName", supervisorDetails.getLastName());
 		        response.put("gender", supervisorDetails.getGender());
@@ -126,7 +130,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	public ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(
 			SuperAdminRegistrationDto superAdminDto) {
 		Map<String, Object> response = new HashMap<>();
-<<<<<<< HEAD
 		try {
 
 			// Fetch the role by ID
@@ -165,7 +168,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			response.put("status", "FAILED");
 			response.put("message", "Error while registering Super Admin: " + e.getMessage());
 			return ResponseEntity.internalServerError().body(response);
-=======
 		ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 		// Fetch the role by ID
 		Optional<Role> roleOptional = roleRepository.findById(superAdminDto.getRoleId());
@@ -173,7 +175,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			resp.setStatus(CommonMessages.FAILED);
 			resp.setMessage(CommonMessages.ROLE_INVALID);
 			return ResponseEntity.badRequest().body(resp);
->>>>>>> 962f4c893e3c115ff02c6978a4457416930bd1d7
 		}
 		// Check if email already exists
 		Optional<CommonLogin> existingUser = loginRepository.findByEmail(superAdminDto.getEmail());
@@ -201,75 +202,68 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		return ResponseEntity.ok(resp);
 
 	}
-
+	}
 	// supervisor register
 
-	@Override
-	public ResponseEntity<Object> registerSupervisor(RegistrationDto supervisorDto) {
-	    Map<String, Object> response = new HashMap<>();
-	    try {
-	        // Encrypt the password
-	        String encryptedPassword = passwordEncoder.encode(supervisorDto.getPassword());
+		@Override
+		public ResponseEntity<Object> registerSupervisor(SupervisorDetails supervisorDetails) {
+		    Map<String, Object> response = new HashMap<>();
+		    try {
+//		        // Admin can only register supervisors, check the role of the requester
+//		        if (!supervisorDetails.getCommonLogin().getRole().getRoleName().equals("ROLE_ADMIN")) {
+//		            log.warn("Unauthorized access attempt. Only admin can register supervisors.");
+//		            response.put("status", "FAILED");
+//		            response.put("message", "Only admin can register supervisors");
+//		            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+//		        }
 
-	        // Fetch the role from the roles table based on roleId from DTO
-	        Optional<Role> roleOptional = roleRepository.findById(supervisorDto.getRoleId());
-	        if (roleOptional.isEmpty()) {
-	            response.put("status", "FAILED");
-	            response.put("message", "Role not found");
-	            return ResponseEntity.badRequest().body(response);
-	        }
+		        // Encrypt the password from SupervisorDetails entity
+		        String encryptedPassword = passwordEncoder.encode(supervisorDetails.getCommonLogin().getPassword());
+		        supervisorDetails.getCommonLogin().setPassword(encryptedPassword);
 
-	        Role role = roleOptional.get();
+		        // Check if the supervisor email already exists
+		        Optional<CommonLogin> existingSupervisor = loginRepository.findByEmail(supervisorDetails.getCommonLogin().getEmail());
+		        if (existingSupervisor.isPresent()) {
+		            response.put("status", "FAILED");
+		            response.put("message", "Supervisor with this email already exists");
+		            return ResponseEntity.badRequest().body(response);
+		        }
 
-	        // Check if the supervisor email already exists
-	        Optional<CommonLogin> existingSupervisor = loginRepository.findByEmail(supervisorDto.getEmail());
-	        if (existingSupervisor.isPresent()) {
-	            response.put("status", "FAILED");
-	            response.put("message", "Supervisor with this email already exists");
-	            return ResponseEntity.badRequest().body(response);
-	        }
+		        // Create and save the new supervisor login (CommonLogin)
+		        CommonLogin supervisorLogin = supervisorDetails.getCommonLogin();
+		        supervisorLogin.setRole(roleRepository.findById(supervisorDetails.getCommonLogin().getRole().getId()).orElseThrow(() -> new IllegalArgumentException("Role not found")));
+		        
+		        CommonLogin savedSupervisorLogin = loginRepository.save(supervisorLogin);
 
-	        // Create and save the new supervisor login
-	        CommonLogin supervisor = new CommonLogin();
-	        supervisor.setEmail(supervisorDto.getEmail());
-	        supervisor.setMobileNo(supervisorDto.getMobileNo());
-	        supervisor.setPassword(encryptedPassword);
-	        supervisor.setRole(role); // Assign the role dynamically based on roleId
+		        // Link the saved CommonLogin back to the SupervisorDetails
+		        supervisorDetails.setCommonLogin(savedSupervisorLogin); // Associate saved login with supervisor details
 
-	        CommonLogin savedSupervisor = loginRepository.save(supervisor);
+		        // Save SupervisorDetails
+		        SupervisorDetails savedSupervisorDetails = supervisorDetailsRepository.save(supervisorDetails);
 
-	        // Create and save supervisor details
-	        SupervisorDetails supervisorDetails = new SupervisorDetails();
-	        supervisorDetails.setFirstName(supervisorDto.getFirstName());
-	        supervisorDetails.setLastName(supervisorDto.getLastName());
-	        supervisorDetails.setGender(supervisorDto.getGender());
-	        supervisorDetails.setBloodGroup(supervisorDto.getBloodGroup());
-	        supervisorDetails.setAddress(supervisorDto.getAddress());
-	        supervisorDetails.setCommonLogin(savedSupervisor); // Link to CommonLogin
+		        // Construct the response
+		       
+		        response.put("userId", savedSupervisorLogin.getUserId());
+		        response.put("email", savedSupervisorLogin.getEmail());
+		        response.put("role", savedSupervisorLogin.getRole().getRoleName());
+		        response.put("firstName", savedSupervisorDetails.getFirstName());
+		        response.put("lastName", savedSupervisorDetails.getLastName());
+		        response.put("gender", savedSupervisorDetails.getGender());
+		        response.put("bloodGroup", savedSupervisorDetails.getBloodGroup());
+		        response.put("address", savedSupervisorDetails.getAddress());
+		        response.put("district", savedSupervisorDetails.getDistrictId());
+	        response.put("taluka", savedSupervisorDetails.getTalukaId());
+		        response.put("status", "SUCCESS");
+		        response.put("message", "Supervisor registered successfully");
 
-	        supervisorDetailsRepository.save(supervisorDetails); // Save SupervisorDetails
+		        return ResponseEntity.ok(response);
+		    } catch (Exception e) {
+		        response.put("status", "FAILED");
+		        response.put("message", "Error while registering Supervisor: " + e.getMessage());
+		        return ResponseEntity.internalServerError().body(response);
+		    }
+		}
 
-	        // Add response fields, including RegistrationDto fields
-	        response.put("status", "SUCCESS");
-	        response.put("message", "Supervisor registered successfully");
-	        response.put("userId", savedSupervisor.getUserId());
-	        response.put("email", savedSupervisor.getEmail());
-	        response.put("role", savedSupervisor.getRole().getRoleName());
-	        response.put("firstName", supervisorDto.getFirstName());
-	        response.put("lastName", supervisorDto.getLastName());
-	        response.put("gender", supervisorDto.getGender());
-	        response.put("bloodGroup", supervisorDto.getBloodGroup());
-	        response.put("address", supervisorDto.getAddress());
-	        response.put("district", supervisorDto.getDistrictId());
-	        response.put("taluka", supervisorDto.getTalukaId());
-
-	        return ResponseEntity.ok(response);
-	    } catch (Exception e) {
-	        response.put("status", "FAILED");
-	        response.put("message", "Error while registering Supervisor: " + e.getMessage());
-	        return ResponseEntity.internalServerError().body(response);
-	    }
-	}
 
 
 	// register co-worker

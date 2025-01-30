@@ -51,7 +51,6 @@ public class RegistrationDto {
     private long districtId;
     
     private long talukaId;
-=======
 	@NotBlank(message = "Email cannot be blank")
 	@Email(message = "Invalid email format")
 	private String email;
@@ -78,7 +77,6 @@ public class RegistrationDto {
 
 	@NotBlank(message = "Role ID cannot be blank")
 	private Long roleId;
->>>>>>> 962f4c893e3c115ff02c6978a4457416930bd1d7
 
 	public static String firstName(CommonLogin commonLogin) {
 		// TODO Auto-generated method stub

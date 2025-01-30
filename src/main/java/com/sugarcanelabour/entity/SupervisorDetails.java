@@ -30,5 +30,8 @@ public class SupervisorDetails {
 	    @JoinColumn(name = "common_login_id")
 	    private CommonLogin commonLogin;  // Link to CommonLogin for supervisor login details
 
+		private String districtId;
+		private String talukaId;
+
 
 }
