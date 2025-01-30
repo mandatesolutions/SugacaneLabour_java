@@ -18,4 +18,5 @@ public class CommonMessages {
 	public static final String CL_PASSWORD_NV = "Password not valid";
 	public static final String CL_LOGIN_SUCCESSFUL = "User login successfuly";
 	/* CommonLogin */
+	public static final String CL_USER_DETAILS_NF = null;
 }

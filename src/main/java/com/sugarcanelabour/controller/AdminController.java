@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.entity.SupervisorDetails;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
@@ -31,7 +32,7 @@ public class AdminController {
 	// Admin registers a supervisor
 	@Operation(summary = "Register Supervisor API", description = "This API is used to register a supervisor by the admin")
 	@PostMapping("/register-supervisor")
-	ResponseEntity<Object> registerSupervisor(@Valid @RequestBody RegistrationDto supervisorDto) {
+	ResponseEntity<Object> registerSupervisor(@Valid @RequestBody SupervisorDetails supervisorDto) {
 		return commonLoginService.registerSupervisor(supervisorDto);
 	}
 

@@ -1,5 +1,6 @@
 package com.sugarcanelabour.model;
 
+import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.Role;
 
 import jakarta.persistence.FetchType;
@@ -27,20 +28,50 @@ public class RegistrationDto {
 	 private String password;
 	    
     @NotBlank(message = "First name cannot be blank")
-    private String firstName;
+	public static String firstName;
     
     @NotBlank(message = "last name cannot be blank")
-    private String lastName;
+	public static String lastName;
 
-    private String gender;
+    public static String gender;
     
-    private String bloodGroup;
+    public static String bloodGroup;
     
     @NotBlank(message = "Address cannot be blank")
-    private String address;
+    public static String address;
 	    
-    @NotBlank(message = "Role ID cannot be blank")
+ 
     private Long roleId;  
 	    
+    
+    private long districtId;
+    
+    private long talukaId;
 
+	public static String firstName(CommonLogin commonLogin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String lastName(CommonLogin commonLogin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String gender(CommonLogin commonLogin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String address(CommonLogin commonLogin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static String bloodGroup(CommonLogin commonLogin) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+    //private RegistrationDto userDetails;
 }

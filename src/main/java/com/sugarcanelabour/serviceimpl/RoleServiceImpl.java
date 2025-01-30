@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class RoleServiceImpl implements RoleService {
 
 	// get All roles
 
-	// @Cacheable(value = "roles", key = "'allRoles'")
+	@Cacheable(value = "roles", key = "'allRoles'")
 	@Transactional
 	@Override
 	public ApiResponse<List<Role>> getAllRoles() {

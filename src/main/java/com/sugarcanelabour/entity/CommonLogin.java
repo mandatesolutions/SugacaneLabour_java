@@ -62,7 +62,7 @@ public class CommonLogin {
 
 	@Enumerated(EnumType.STRING)
 	@JsonIgnore
-	private UserStatus status;
+	private UserStatus status= UserStatus.ACTIVE;
 	
 
 }
