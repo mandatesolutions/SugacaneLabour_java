@@ -13,6 +13,7 @@ public class JwtResponse {
 	}
 
 	public JwtResponse(String token) {
+		super();
 		this.token = token;
 	}
 	

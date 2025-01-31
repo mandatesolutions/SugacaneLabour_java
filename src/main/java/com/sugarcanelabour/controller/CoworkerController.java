@@ -1,15 +1,16 @@
 package com.sugarcanelabour.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
@@ -32,4 +33,12 @@ public class CoworkerController {
             @Valid @RequestBody RegistrationDto laborerDto) {
         return commonLoginService.registerLaborer(laborerDto);
     }
+	
+	@GetMapping("/tests")
+	ResponseEntity<Object> test() {
+		log.info("***** Inside - Coworker Controller - test *****");
+		Map<String, Object> response = new HashMap<>();
+		response.put("status", "success");
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

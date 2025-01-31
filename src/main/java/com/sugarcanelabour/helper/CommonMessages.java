@@ -22,4 +22,8 @@ public class CommonMessages {
 	
 	/* CommonLogin */
 	public static final String CL_USER_DETAILS_NF = null;
+	
+	public final String TEST_MESSAGE = "Test Api";
 }
+
+

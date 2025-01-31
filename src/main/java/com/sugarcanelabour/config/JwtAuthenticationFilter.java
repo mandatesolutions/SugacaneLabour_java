@@ -47,9 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 				username = jwtUtil.extractUsername(jwtToken);
 				request.setAttribute("userId", jwtUtil.extractUserId(jwtToken));
 			} catch (ExpiredJwtException e) {
-				throw new AuthenticationException("Token has expired", e);
+				throw new AuthenticationException("Token has expired",null);
 			} catch (JwtException e) {
-				throw new AuthenticationException("Invalid token", e);
+				throw new AuthenticationException("Invalid token",null);
 			}
 
 			// Validate token

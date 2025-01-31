@@ -70,9 +70,10 @@ public class MyJwtSecurityConfig {
 								.requestMatchers("/v3/api-docs/**", "/stomp/**", "/wss/**", "/configuration/ui",
 										"/swagger-resources/**", "/configuration/security", "/swagger-ui/**",
 										"/webjars/**", "/sclm/common-login/login", "/sclm/sup-admin/register",
-										"/sclm/labor/add", "/sclm/admin/register-supervisor")
-								.permitAll().requestMatchers("/sclm/sup-admin/**").hasRole("SUP-ADMIN")
-								.requestMatchers("/sclm/admin/**").hasRole("ADMIN").anyRequest().authenticated())
+										"/sclm/labor/add")
+								.permitAll().requestMatchers("/sclm/sup-admin/**").hasRole("SUP-ADMIN").requestMatchers("/sclm/admin/**").hasRole("ADMIN")
+								.requestMatchers("/sclm/coworker/**").hasRole("CO-WORKER").requestMatchers("/sclm/supervisor/register-coworker").hasRole("SUPERVISOR")
+								.requestMatchers("/sclm/admin/register-supervisor**").hasRole("ADMIN").anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(entryPoint));
 
