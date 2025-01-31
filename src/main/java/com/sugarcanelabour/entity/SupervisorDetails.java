@@ -26,7 +26,7 @@ public class SupervisorDetails {
 	    private String bloodGroup;
 	    private String address;
 
-	    @ManyToOne
+	    @OneToOne
 	    @JoinColumn(name = "common_login_id")
 	    private CommonLogin commonLogin;  // Link to CommonLogin for supervisor login details
 

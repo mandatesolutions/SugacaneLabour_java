@@ -1,5 +1,7 @@
 package com.sugarcanelabour.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
@@ -23,9 +26,10 @@ public class CoworkerController {
 	private CommonLoginService commonLoginService;
 	
 	 // Coworker registers a laborer
-    @Operation(summary = "Register Laborer API", description = "This API is used to register a laborer by the coworker")
+	@Operation(summary = "Register Laborer API", description = "This API is used to register a laborer by the coworker")
     @PostMapping("/register-laborer")
-    ResponseEntity<Object> registerLaborer(@Valid @RequestBody RegistrationDto laborerDto) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> registerLaborer(
+            @Valid @RequestBody RegistrationDto laborerDto) {
         return commonLoginService.registerLaborer(laborerDto);
     }
 }

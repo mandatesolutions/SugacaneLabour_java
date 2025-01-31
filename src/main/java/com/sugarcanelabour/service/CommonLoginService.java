@@ -20,21 +20,11 @@ public interface CommonLoginService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(@Valid SuperAdminRegistrationDto superAdminDto);
 
-//	ResponseEntity<Object> registerSupervisor(@Valid RegistrationDto supervisorDto);
-//	
-//
-//	ResponseEntity<Object> registerCoworker(@Valid RegistrationDto coworkerDto);
-//
-//
-//	ResponseEntity<Object> registerLaborer(@Valid RegistrationDto laborerDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerSupervisor(RegistrationDto registrationDto);
 
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoworker(RegistrationDto coworkerDto);
 
-	ResponseEntity<Object> registerSupervisor(SupervisorDetails supervisorDetails);
-	ResponseEntity<Object> registerSupervisor(@Valid RegistrationDto supervisorDto);
-
-	ResponseEntity<Object> registerCoworker(@Valid RegistrationDto coworkerDto);
-
-	ResponseEntity<Object> registerLaborer(@Valid RegistrationDto laborerDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerLaborer(RegistrationDto laborerDto);
 
 	// CommonLogin registerSupervisor(RegistrationDto registrationDto);
 
