@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -48,17 +49,17 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
 	}
 
-//	@ExceptionHandler(MaxUploadSizeExceededException.class)
-//	public ResponseEntity<Object> handleMaxSizeException(MaxUploadSizeExceededException ex, WebRequest request) {
-//
-//		// Construct the error message without using String.format()
-//		String errorMessage = "File size exceeds the maximum limit";
-//
-//		// Create the error response
-//		ErrorResponse errorDetails = new ErrorResponse(new Date(), errorMessage, HttpStatus.BAD_REQUEST.toString(),
-//				"File upload error");
-//		return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
-//	}
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<Object> handleMaxSizeException(MaxUploadSizeExceededException ex, WebRequest request) {
+
+		// Construct the error message without using String.format()
+		String errorMessage = "File size exceeds the maximum limit";
+
+		// Create the error response
+		ErrorResponse errorDetails = new ErrorResponse(new Date(), errorMessage, HttpStatus.BAD_REQUEST.toString(),
+				"File upload error");
+		return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+	}
 
 	@ExceptionHandler(ConflictException.class)
 	public ResponseEntity<Object> handleConflictException(ConflictException ex, WebRequest request) {

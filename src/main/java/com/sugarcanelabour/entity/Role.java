@@ -29,4 +29,6 @@ public class Role {
 	@NotBlank(message = "Role name should not be blank")
 	@Column(name = "role_name", unique = true)
 	private String roleName;
+	
+	
 }
