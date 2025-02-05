@@ -16,6 +16,8 @@ public interface SupervisorDetailsRepository extends JpaRepository<SupervisorDet
 
 	
 	Optional<SupervisorDetails> findByCommonLogin_UserId(Long userId);
+	
+	//Optional<SupervisorDetails> findByCommonLoginId(Long commonLoginId);
 
 
 }

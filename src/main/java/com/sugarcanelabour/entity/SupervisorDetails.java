@@ -1,5 +1,13 @@
 package com.sugarcanelabour.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,11 +28,24 @@ public class SupervisorDetails {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long id;
 
+	 	private Long age;
+	    private Long familyMembers;
 	    private String firstName;
 	    private String lastName;
 	    private String gender;
 	    private String bloodGroup;
 	    private String address;
+	    private String medicalHistory;
+	   
+	    
+		@JsonIgnore
+		@CreationTimestamp
+		private LocalDateTime createdAt;
+
+		@JsonIgnore
+		@UpdateTimestamp
+		private LocalDateTime updatedAt;
+
 
 	    @OneToOne
 	    @JoinColumn(name = "common_login_id")
@@ -32,6 +53,8 @@ public class SupervisorDetails {
 
 		private String districtId;
 		private String talukaId;
-
+		
+		 @Column(name = "unique_labor_id")  // Ensure this matches the column name in your database
+		    private String uniqueLaborId; // or appropriate data type
 
 }

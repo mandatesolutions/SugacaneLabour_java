@@ -40,7 +40,11 @@ public class RegistrationDto {
     
     private long talukaId;
     
-  
+	private Long age;
+	
+    private Long familyMembers;
 
+    private String medicalHistory;
+	   
 
 }

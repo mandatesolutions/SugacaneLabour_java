@@ -22,9 +22,16 @@ public interface CommonLoginService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> registerSupervisor(RegistrationDto registrationDto);
 
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoworker(RegistrationDto coworkerDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto);
 
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerLaborer(RegistrationDto laborerDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
+
+	ResponseEntity<Object> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId);
+
+	//ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
+
 
 	// CommonLogin registerSupervisor(RegistrationDto registrationDto);
 

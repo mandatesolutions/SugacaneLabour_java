@@ -31,8 +31,8 @@ public class SupervisorController {
 	  @Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by the supervisor")
 	    @PostMapping("/register-coworker")
 	    public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoworker(
-	            @Valid @RequestBody RegistrationDto coworkerDto) {
-	        return commonLoginService.registerCoworker(coworkerDto);
+	            @Valid @RequestBody RegistrationDto registrationDto) {
+	        return commonLoginService.registerCoWorker(registrationDto);
 	    }
 
 	  @GetMapping("/tests")

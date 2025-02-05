@@ -1,6 +1,7 @@
 package com.sugarcanelabour.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sugarcanelabour.helper.Enums.UserStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -64,5 +67,32 @@ public class CommonLogin {
 	@JsonIgnore
 	private UserStatus status= UserStatus.ACTIVE;
 	
+	
+	@Column(unique = true, nullable = false, updatable = false)
+	private String uuid;
+	
+    // Method to generate UUID only for 'ROLE_LABOR'
+	@PrePersist
+	private void prePersist() {
+	    if (this.role != null && "ROLE_LABOR".equals(this.role.getRoleName())) {
+	        if (this.uuid == null) {
+	            this.uuid = generateUniqueNumber();  // Generate unique numeric-like UUID
+	            System.out.println("UUID generated for ROLE_LABOR: " + this.uuid);
+	        }
+	    }
+	}
 
+	private String generateUniqueNumber() {
+	    UUID uuid = UUID.randomUUID();  // Generate a random UUID
+	    long mostSigBits = uuid.getMostSignificantBits();  // Get the most significant bits of UUID
+	    long leastSigBits = uuid.getLeastSignificantBits();  // Get the least significant bits of UUID
+
+	    // Combine both to generate a unique number and ensure it’s positive
+	    long uniqueNumber = Math.abs(mostSigBits ^ leastSigBits);
+
+	    return "LBR-" + uniqueNumber;  // Prefix with 'LBR-' to match your desired format
+	}
+
+
+	
 }

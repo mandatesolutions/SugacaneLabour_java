@@ -3,7 +3,9 @@ package com.sugarcanelabour.serviceimpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.Role;
 import com.sugarcanelabour.entity.SupervisorDetails;
+import com.sugarcanelabour.exception.ResourceNotFoundException;
 import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.helper.CommonMessages;
 import com.sugarcanelabour.helper.Enums.UserStatus;
@@ -24,6 +27,7 @@ import com.sugarcanelabour.repository.RoleRepository;
 import com.sugarcanelabour.repository.SupervisorDetailsRepository;
 import com.sugarcanelabour.service.CommonLoginService;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -35,16 +39,21 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	private PasswordEncoder passwordEncoder;
 	private RoleRepository roleRepository;
 	private JwtHelper jwtHelper;
+	private RedisTemplate<String, Object> redisTemplate;
 
+
+	
+	
 	private SupervisorDetailsRepository supervisorDetailsRepository;
 
 	public CommonLoginServiceImpl(CommonLoginRepository loginRepository, PasswordEncoder passwordEncoder,
-			RoleRepository roleRepository, JwtHelper jwtHelper,SupervisorDetailsRepository supervisorDetailsRepository) {
+			RoleRepository roleRepository, JwtHelper jwtHelper,SupervisorDetailsRepository supervisorDetailsRepository,RedisTemplate<String, Object> redisTemplate) {
 		this.loginRepository = loginRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
 		this.jwtHelper = jwtHelper;
 		this.supervisorDetailsRepository=supervisorDetailsRepository;
+		this.redisTemplate = redisTemplate;
 	}
 
 	// Login with JWT token generation
@@ -100,7 +109,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 		    if (!supervisorDetailsOptional.isPresent()) {
 		        resp.setStatus(CommonMessages.FAILED);
-		        resp.setMessage("Supervisor details not found.");
+		        resp.setMessage("User details not found.");
 		        return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
 		    }
 
@@ -124,9 +133,40 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		    resp.setData(response);
 		}
 
-		// Ensure the final response contains all necessary fields
-		return new ResponseEntity<>(resp, HttpStatus.OK);
+		  // For Labor role, add UUID and other fields from SupervisorDetails
+	    if (role.equals("ROLE_LABOR")) {
+	        // Ensure UUID is added only for Labor
+	        Optional<SupervisorDetails> supervisorDetailsOptional = supervisorDetailsRepository.findByCommonLogin(user.get());
+
+	        if (!supervisorDetailsOptional.isPresent()) {
+	            resp.setStatus(CommonMessages.FAILED);
+	            resp.setMessage("Labor details not found.");
+	            return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+	        }
+
+	        SupervisorDetails supervisorDetails = supervisorDetailsOptional.get();
+
+	        response.put("userId", user.get().getUserId());
+	        response.put("email", user.get().getEmail());
+	        response.put("role", role);
+	        response.put("token", jwtToken);
+	        response.put("uuid", user.get().getUuid());  // Add uuid for Labor role
+	        response.put("firstName", supervisorDetails.getFirstName());
+	        response.put("lastName", supervisorDetails.getLastName());
+	        response.put("gender", supervisorDetails.getGender());
+	        response.put("bloodGroup", supervisorDetails.getBloodGroup());
+	        response.put("address", supervisorDetails.getAddress());
+	        response.put("districtId", supervisorDetails.getDistrictId());
+	        response.put("talukaId", supervisorDetails.getTalukaId());
+
+	        resp.setStatus(CommonMessages.SUCCESS);
+	        resp.setMessage(String.format("%s login successfully", formattedRole));
+	        resp.setData(response);
+	    }
+
+	    return new ResponseEntity<>(resp, HttpStatus.OK);
 	}
+	
 	
 	//SUPER-ADMIN REGISTER
 	@Override
@@ -189,11 +229,11 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	    Map<String, Object> response = new HashMap<>();
 
 	    try {
-	        // Fetch the role by ID
-	        Optional<Role> roleOptional = roleRepository.findById(registrationDto.getRoleId());
+	        // Fetch Supervisor Role
+	        Optional<Role> roleOptional = roleRepository.findByRoleName("ROLE_SUPERVISOR");
 	        if (roleOptional.isEmpty()) {
 	            resp.setStatus("FAILED");
-	            resp.setMessage("Invalid role ID.");
+	            resp.setMessage("Supervisor role not found.");
 	            return ResponseEntity.badRequest().body(resp);
 	        }
 
@@ -208,17 +248,16 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        // Encrypt the password
 	        String encryptedPassword = passwordEncoder.encode(registrationDto.getPassword());
 
-	        // 1. Create the CommonLogin entity
+	        // Create CommonLogin entity
 	        CommonLogin commonLogin = new CommonLogin();
 	        commonLogin.setEmail(registrationDto.getEmail());
 	        commonLogin.setMobileNo(registrationDto.getMobileNo());
-	        commonLogin.setPassword(encryptedPassword); // Set encrypted password
+	        commonLogin.setPassword(encryptedPassword);
+	        commonLogin.setRole(roleOptional.get()); // Assign Supervisor role
 
-	        // Assign the role to the CommonLogin entity
-	        commonLogin.setRole(roleOptional.get());
 	        loginRepository.save(commonLogin);
 
-	        // 2. Create the SupervisorDetails entity
+	        // Create SupervisorDetails entity
 	        SupervisorDetails supervisorDetails = new SupervisorDetails();
 	        supervisorDetails.setFirstName(registrationDto.getFirstName());
 	        supervisorDetails.setLastName(registrationDto.getLastName());
@@ -228,6 +267,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        supervisorDetails.setDistrictId(String.valueOf(registrationDto.getDistrictId()));
 	        supervisorDetails.setTalukaId(String.valueOf(registrationDto.getTalukaId()));
 	        supervisorDetails.setCommonLogin(commonLogin); // Link CommonLogin to SupervisorDetails
+
 	        supervisorDetailsRepository.save(supervisorDetails);
 
 	        // Prepare response
@@ -255,80 +295,89 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 
 
+
 	// register co-worker
 
 	@Override
-	public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoworker(RegistrationDto coworkerDto) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
 
 	    try {
-	        // Encrypt the password
-	        String encryptedPassword = passwordEncoder.encode(coworkerDto.getPassword());
-
-	        // Fetch the role from the DTO (assuming the role is passed via the DTO)
-	        Optional<Role> roleOptional = roleRepository.findById(coworkerDto.getRoleId());
+	        // Fetch Co-worker Role
+	        Optional<Role> roleOptional = roleRepository.findByRoleName("ROLE_CO-WORKER");
 	        if (roleOptional.isEmpty()) {
 	            resp.setStatus("FAILED");
-	            resp.setMessage("Role not found");
+	            resp.setMessage("Co-worker role not found.");
 	            return ResponseEntity.badRequest().body(resp);
 	        }
-	        
-	        
 
-	        Role role = roleOptional.get();
-
-	        // Check if the coworker's email already exists
-	        Optional<CommonLogin> existingCoworker = loginRepository.findByEmail(coworkerDto.getEmail());
-	        if (existingCoworker.isPresent()) {
+	        // Check if email already exists
+	        Optional<CommonLogin> existingUser = loginRepository.findByEmail(registrationDto.getEmail());
+	        if (existingUser.isPresent()) {
 	            resp.setStatus("FAILED");
-	            resp.setMessage("Coworker with this email already exists");
+	            resp.setMessage("Email already exists.");
 	            return ResponseEntity.badRequest().body(resp);
 	        }
 
-	        // Create and save the new coworker
-	        CommonLogin coworker = new CommonLogin();
-	        coworker.setEmail(coworkerDto.getEmail());
-	        coworker.setMobileNo(coworkerDto.getMobileNo());
-	        coworker.setPassword(encryptedPassword);
-	        coworker.setRole(role); // Assign the role from DTO
+	        // Encrypt the password
+	        String encryptedPassword = passwordEncoder.encode(registrationDto.getPassword());
 
-	        CommonLogin savedCoworker = loginRepository.save(coworker);
+	        // Create CommonLogin entity
+	        CommonLogin commonLogin = new CommonLogin();
+	        commonLogin.setEmail(registrationDto.getEmail());
+	        commonLogin.setMobileNo(registrationDto.getMobileNo());
+	        commonLogin.setPassword(encryptedPassword);
+	        commonLogin.setRole(roleOptional.get()); // Assign Co-worker role
 
-	        // Add response fields
-	        response.put("userId", savedCoworker.getUserId());
-	        response.put("email", savedCoworker.getEmail());
-	        response.put("role", savedCoworker.getRole().getRoleName());
-	        response.put("firstName", coworkerDto.getFirstName());
-	        response.put("lastName", coworkerDto.getLastName());
-	        response.put("gender", coworkerDto.getGender());
-	        response.put("bloodGroup", coworkerDto.getBloodGroup());
-	        response.put("address", coworkerDto.getAddress());
+	        loginRepository.save(commonLogin);
+
+	        // Create SupervisorDetails entity (Reusing for Co-workers)
+	        SupervisorDetails coworkerDetails = new SupervisorDetails();
+	        coworkerDetails.setFirstName(registrationDto.getFirstName());
+	        coworkerDetails.setLastName(registrationDto.getLastName());
+	        coworkerDetails.setGender(registrationDto.getGender());
+	        coworkerDetails.setBloodGroup(registrationDto.getBloodGroup());
+	        coworkerDetails.setAddress(registrationDto.getAddress());
+	        coworkerDetails.setDistrictId(String.valueOf(registrationDto.getDistrictId()));
+	        coworkerDetails.setTalukaId(String.valueOf(registrationDto.getTalukaId()));
+	        coworkerDetails.setCommonLogin(commonLogin); // Link CommonLogin to SupervisorDetails
+
+	        supervisorDetailsRepository.save(coworkerDetails);
+
+	        // Prepare response
+	        response.put("userId", commonLogin.getUserId());
+	        response.put("email", commonLogin.getEmail());
+	        response.put("role", commonLogin.getRole().getRoleName());
+	        response.put("coworkerId", coworkerDetails.getId());
+	        response.put("districtId", coworkerDetails.getDistrictId());
+	        response.put("talukaId", coworkerDetails.getTalukaId());
+	        response.put("bloodGroup",coworkerDetails.getBloodGroup());
+	        response.put("address", coworkerDetails.getAddress());
+	        
 
 	        resp.setStatus("SUCCESS");
-	        resp.setMessage("CO-WORKER registered successfully.");
+	        resp.setMessage("Co-worker registered successfully.");
 	        resp.setData(response);
 
 	        return ResponseEntity.ok(resp);
 	    } catch (Exception e) {
 	        resp.setStatus("FAILED");
-	        resp.setMessage("Error while registering Coworker: " + e.getMessage());
+	        resp.setMessage("Error while registering co-worker: " + e.getMessage());
 	        return ResponseEntity.internalServerError().body(resp);
 	    }
 	}
 
 
+
 	@Override
-	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLaborer(RegistrationDto laborerDto) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
 
 	    try {
-	        // Encrypt the password
-	        String encryptedPassword = passwordEncoder.encode(laborerDto.getPassword());
-
-	        // Fetch the laborer role from the DTO
-	        Optional<Role> roleOptional = roleRepository.findById(laborerDto.getRoleId());
+	        // Fetch the Role from the DTO
+	        Optional<Role> roleOptional = roleRepository.findById(laborDto.getRoleId());
 	        if (roleOptional.isEmpty()) {
 	            resp.setStatus("FAILED");
 	            resp.setMessage("Role not found");
@@ -338,41 +387,174 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        Role role = roleOptional.get();
 
 	        // Check if the laborer's email already exists
-	        Optional<CommonLogin> existingLaborer = loginRepository.findByEmail(laborerDto.getEmail());
-	        if (existingLaborer.isPresent()) {
+	        Optional<CommonLogin> existingLabor = loginRepository.findByEmail(laborDto.getEmail());
+	        if (existingLabor.isPresent()) {
 	            resp.setStatus("FAILED");
 	            resp.setMessage("Laborer with this email already exists");
 	            return ResponseEntity.badRequest().body(resp);
 	        }
 
-	        // Create and save the new laborer
-	        CommonLogin laborer = new CommonLogin();
-	        laborer.setEmail(laborerDto.getEmail());
-	        laborer.setMobileNo(laborerDto.getMobileNo());
-	        laborer.setPassword(encryptedPassword);
-	        laborer.setRole(role); // Assign role from DTO
+	        // Encrypt the password
+	        String encryptedPassword = passwordEncoder.encode(laborDto.getPassword());
 
-	        CommonLogin savedLaborer = loginRepository.save(laborer);
+	        // Create CommonLogin entity for labor
+	        CommonLogin labor = new CommonLogin();
+	        labor.setEmail(laborDto.getEmail());
+	        labor.setMobileNo(laborDto.getMobileNo());
+	        labor.setPassword(encryptedPassword);
+	        labor.setRole(role); // Assign role from DTO
+	       // labor.setUuid(UUID.randomUUID().toString());  // Generate a unique UUID
 
-	        // Add response fields
-	        response.put("userId", savedLaborer.getUserId());
-	        response.put("email", savedLaborer.getEmail());
-	        response.put("role", savedLaborer.getRole().getRoleName());
-	        response.put("firstName", laborerDto.getFirstName());
-	        response.put("lastName", laborerDto.getLastName());
-	        response.put("gender", laborerDto.getGender());
-	        response.put("bloodGroup", laborerDto.getBloodGroup());
-	        response.put("address", laborerDto.getAddress());
+
+	        loginRepository.save(labor);
+
+	        // Reuse SupervisorDetails entity for Labor
+	        SupervisorDetails laborDetails = new SupervisorDetails(); // Reusing SupervisorDetails
+	        laborDetails.setFirstName(laborDto.getFirstName());
+	        laborDetails.setLastName(laborDto.getLastName());
+	        laborDetails.setGender(laborDto.getGender());
+	        laborDetails.setBloodGroup(laborDto.getBloodGroup());
+	        laborDetails.setAddress(laborDto.getAddress());
+	        laborDetails.setDistrictId(String.valueOf(laborDto.getDistrictId()));
+	        laborDetails.setTalukaId(String.valueOf(laborDto.getTalukaId()));
+	        laborDetails.setCommonLogin(labor); // Link CommonLogin to SupervisorDetails
+	        laborDetails.setAge(laborDto.getAge());
+	        laborDetails.setFamilyMembers(laborDto.getFamilyMembers());
+	        laborDetails.setMedicalHistory(laborDto.getMedicalHistory());
+	        
+	        // Generate the unique labor ID by concatenating "LBR-" with the uuid
+	        String uniqueLaborId = labor.getUuid();
+	        laborDetails.setUniqueLaborId(uniqueLaborId); // Set the unique labor ID
+
+
+
+	        supervisorDetailsRepository.save(laborDetails);
+
+	        // Prepare response with full details
+	        response.put("firstName", laborDetails.getFirstName());
+	        response.put("lastName", laborDetails.getLastName());
+	        response.put("gender", laborDetails.getGender());
+	        response.put("bloodGroup", laborDetails.getBloodGroup());
+	        response.put("address", laborDetails.getAddress());
+	        response.put("email", labor.getEmail());
+	        response.put("mobileNo", labor.getMobileNo());
+	        response.put("role", labor.getRole().getRoleName());  // The role name (e.g., ROLE_LABOR)
+	        response.put("districtId", laborDetails.getDistrictId());
+	        response.put("talukaId", laborDetails.getTalukaId());
+	        response.put("userId", labor.getUserId());
+	        response.put("laborId", laborDetails.getId()); // Labor ID (from SupervisorDetails)
+	        response.put("medicalHistroy", laborDetails.getMedicalHistory());
+	        response.put("Age", laborDetails.getAge());
+	        response.put("familyMembers", laborDetails.getFamilyMembers());
+	        
 
 	        resp.setStatus("SUCCESS");
-	        resp.setMessage("Laborer registered successfully.");
+	        resp.setMessage("Labor registered successfully.");
 	        resp.setData(response);
 
 	        return ResponseEntity.ok(resp);
 	    } catch (Exception e) {
 	        resp.setStatus("FAILED");
-	        resp.setMessage("Error while registering Laborer: " + e.getMessage());
+	        resp.setMessage("Error while registering labor: " + e.getMessage());
 	        return ResponseEntity.internalServerError().body(resp);
 	    }
 	}
+	
+	@Override
+	public ResponseEntity<Object> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest) {
+	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+	    Map<String, Object> response = new HashMap<>();
+
+	    // Fetch the CommonLogin (laborer) by ID
+	    Optional<CommonLogin> commonLoginOptional = loginRepository.findById(commonLoginId);
+	    if (!commonLoginOptional.isPresent()) {
+	        resp.setStatus(CommonMessages.FAILED);
+	        resp.setMessage("Laborer not found.");
+	        return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+	    }
+
+	    CommonLogin commonLogin = commonLoginOptional.get();
+
+	    // Fetch the SupervisorDetails to update
+	    Optional<SupervisorDetails> supervisorDetailsOptional = supervisorDetailsRepository.findByCommonLogin(commonLogin);
+	    if (!supervisorDetailsOptional.isPresent()) {
+	        resp.setStatus(CommonMessages.FAILED);
+	        resp.setMessage("Labor details not found.");
+	        return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+	    }
+
+	    SupervisorDetails supervisorDetails = supervisorDetailsOptional.get();
+
+	    // Update only the fields that are not null in the DTO
+	    if (laborUpdateRequest.getAddress() != null && !laborUpdateRequest.getAddress().trim().isEmpty()) {
+	        supervisorDetails.setAddress(laborUpdateRequest.getAddress());
+	    }
+	    if (laborUpdateRequest.getFirstName() != null && !laborUpdateRequest.getFirstName().trim().isEmpty()) {
+	        supervisorDetails.setFirstName(laborUpdateRequest.getFirstName());
+	    }
+	    if (laborUpdateRequest.getLastName() != null && !laborUpdateRequest.getLastName().trim().isEmpty()) {
+	        supervisorDetails.setLastName(laborUpdateRequest.getLastName());
+	    }
+	    if (laborUpdateRequest.getMedicalHistory() != null && !laborUpdateRequest.getMedicalHistory().trim().isEmpty()) {
+	        supervisorDetails.setMedicalHistory(laborUpdateRequest.getMedicalHistory());
+	    }
+	    // Add additional fields to update as needed, following the same pattern
+
+	    // Save the updated supervisor details
+	    supervisorDetailsRepository.save(supervisorDetails);
+
+	    // Prepare the response
+	    response.put("userId", commonLogin.getUserId());
+	    response.put("firstName", supervisorDetails.getFirstName());
+	    response.put("lastName", supervisorDetails.getLastName());
+	    response.put("address", supervisorDetails.getAddress());
+	    response.put("gender", supervisorDetails.getGender());
+	    response.put("bloodGroup", supervisorDetails.getBloodGroup());
+	    response.put("districtId", supervisorDetails.getDistrictId());
+	    response.put("talukaId", supervisorDetails.getTalukaId());
+
+	    resp.setStatus(CommonMessages.SUCCESS);
+	    resp.setMessage("Labor details updated successfully.");
+	    resp.setData(response);
+
+	    return new ResponseEntity<>(resp, HttpStatus.OK);
+	}
+
+	@Override
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId) {
+        ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+        Map<String, Object> response = new HashMap<>();
+
+        // Fetch the CommonLogin (laborer) by ID
+        Optional<CommonLogin> commonLoginOptional = loginRepository.findById(commonLoginId);
+        if (!commonLoginOptional.isPresent()) {
+            resp.setStatus("Failed");
+            resp.setMessage("Labor not found");
+            return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+        }
+
+        CommonLogin commonLogin = commonLoginOptional.get();
+
+        // Fetch the associated SupervisorDetails to delete the laborer's details
+        Optional<SupervisorDetails> supervisorDetailsOptional = supervisorDetailsRepository.findByCommonLogin(commonLogin);
+        if (!supervisorDetailsOptional.isPresent()) {
+            resp.setStatus("Failed");
+            resp.setMessage("Labor details not found");
+            return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+        }
+
+        SupervisorDetails supervisorDetails = supervisorDetailsOptional.get();
+
+        // Delete the laborer's details
+        supervisorDetailsRepository.delete(supervisorDetails);  // Deleting the laborer's details
+
+        // Prepare the response
+        response.put("message", "Laborer deleted successfully");
+        resp.setStatus("Success");
+        resp.setMessage("Laborer deleted successfully");
+        resp.setData(response);
+
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
+
 }
