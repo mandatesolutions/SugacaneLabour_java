@@ -233,60 +233,60 @@ public class LaborServiceImpl implements LaborService{
 	    }
 
 
-	    @Transactional
-	    @Override
-	    public ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest) {
-	        log.info("***** Inside updateLaborDetails API *****");
-
-	        // Fetch CommonLogin by ID
-	        CommonLogin commonLogin = commonLoginRepository.findById(commonLoginId)
-	                .orElseThrow(() -> new ResourceNotFoundException("Labor with ID " + commonLoginId + " not found"));
-
-	        // Fetch SupervisorDetails (Reused for labor details)
-	        SupervisorDetails supervisorDetails = supervisorDetailsRepository.findById(commonLoginId)
-	                .orElseThrow(() -> new ResourceNotFoundException("User details not found for ID " + commonLoginId));
-
-	        // Update fields in CommonLogin
-	        if (laborUpdateRequest.getEmail() != null && !laborUpdateRequest.getEmail().trim().isEmpty()) {
-	            commonLogin.setEmail(laborUpdateRequest.getEmail());
-	        }
-	        if (laborUpdateRequest.getMobileNo() != null && !laborUpdateRequest.getMobileNo().trim().isEmpty()) {
-	            commonLogin.setMobileNo(laborUpdateRequest.getMobileNo());
-	        }
-
-	        // Update fields in SupervisorDetails
-	        if (laborUpdateRequest.getFirstName() != null && !laborUpdateRequest.getFirstName().trim().isEmpty()) {
-	            supervisorDetails.setFirstName(laborUpdateRequest.getFirstName());
-	        }
-	        if (laborUpdateRequest.getLastName() != null && !laborUpdateRequest.getLastName().trim().isEmpty()) {
-	            supervisorDetails.setLastName(laborUpdateRequest.getLastName());
-	        }
-	        if (laborUpdateRequest.getGender() != null) {
-	            supervisorDetails.setGender(laborUpdateRequest.getGender());
-	        }
-	    
-	        if (laborUpdateRequest.getAddress() != null && !laborUpdateRequest.getAddress().trim().isEmpty()) {
-	            supervisorDetails.setAddress(laborUpdateRequest.getAddress());
-	        }
-	       
-	        if (laborUpdateRequest.getMedicalHistory() != null && !laborUpdateRequest.getMedicalHistory().trim().isEmpty()) {
-	            supervisorDetails.setMedicalHistory(laborUpdateRequest.getMedicalHistory());
-	        }
-
-	        // Save updated details
-	        commonLoginRepository.save(commonLogin);
-	        supervisorDetailsRepository.save(supervisorDetails);
-
-	        // Remove cache
-	        redisTemplate.delete("laborDetails:" + commonLogin.getUserId());
-
-	        // Create API Response
-	        ApiResponse<String> response = new ApiResponse<>();
-	        response.setStatus(CommonMessages.SUCCESS);
-	        response.setMessage("Labor details updated successfully");
-
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    }
+//	    @Transactional
+//	    @Override
+//	    public ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest) {
+//	        log.info("***** Inside updateLaborDetails API *****");
+//
+//	        // Fetch CommonLogin by ID
+//	        CommonLogin commonLogin = commonLoginRepository.findById(commonLoginId)
+//	                .orElseThrow(() -> new ResourceNotFoundException("Labor with ID " + commonLoginId + " not found"));
+//
+//	        // Fetch SupervisorDetails (Reused for labor details)
+//	        SupervisorDetails supervisorDetails = supervisorDetailsRepository.findById(commonLoginId)
+//	                .orElseThrow(() -> new ResourceNotFoundException("User details not found for ID " + commonLoginId));
+//
+//	        // Update fields in CommonLogin
+//	        if (laborUpdateRequest.getEmail() != null && !laborUpdateRequest.getEmail().trim().isEmpty()) {
+//	            commonLogin.setEmail(laborUpdateRequest.getEmail());
+//	        }
+//	        if (laborUpdateRequest.getMobileNo() != null && !laborUpdateRequest.getMobileNo().trim().isEmpty()) {
+//	            commonLogin.setMobileNo(laborUpdateRequest.getMobileNo());
+//	        }
+//
+//	        // Update fields in SupervisorDetails
+//	        if (laborUpdateRequest.getFirstName() != null && !laborUpdateRequest.getFirstName().trim().isEmpty()) {
+//	            supervisorDetails.setFirstName(laborUpdateRequest.getFirstName());
+//	        }
+//	        if (laborUpdateRequest.getLastName() != null && !laborUpdateRequest.getLastName().trim().isEmpty()) {
+//	            supervisorDetails.setLastName(laborUpdateRequest.getLastName());
+//	        }
+//	        if (laborUpdateRequest.getGender() != null) {
+//	            supervisorDetails.setGender(laborUpdateRequest.getGender());
+//	        }
+//	    
+//	        if (laborUpdateRequest.getAddress() != null && !laborUpdateRequest.getAddress().trim().isEmpty()) {
+//	            supervisorDetails.setAddress(laborUpdateRequest.getAddress());
+//	        }
+//	       
+//	        if (laborUpdateRequest.getMedicalHistory() != null && !laborUpdateRequest.getMedicalHistory().trim().isEmpty()) {
+//	            supervisorDetails.setMedicalHistory(laborUpdateRequest.getMedicalHistory());
+//	        }
+//
+//	        // Save updated details
+//	        commonLoginRepository.save(commonLogin);
+//	        supervisorDetailsRepository.save(supervisorDetails);
+//
+//	        // Remove cache
+//	        redisTemplate.delete("laborDetails:" + commonLogin.getUserId());
+//
+//	        // Create API Response
+//	        ApiResponse<String> response = new ApiResponse<>();
+//	        response.setStatus(CommonMessages.SUCCESS);
+//	        response.setMessage("Labor details updated successfully");
+//
+//	        return new ResponseEntity<>(response, HttpStatus.OK);
+//	    }
 
 
 

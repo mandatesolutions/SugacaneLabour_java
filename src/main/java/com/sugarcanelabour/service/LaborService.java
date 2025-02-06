@@ -15,8 +15,8 @@ public interface LaborService {
 
 	ResponseEntity<Map<String, Object>> generateLaborDetailsPdfAndSendEmail(Long commonLoginId, String recipientEmail);
 
-	ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId,
-			RegistrationDto laborUpdateRequest);
+//	ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId,
+//			RegistrationDto laborUpdateRequest);
 
 	
 	

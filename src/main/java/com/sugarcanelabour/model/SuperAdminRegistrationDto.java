@@ -22,4 +22,8 @@ public class SuperAdminRegistrationDto {
 	 @NotNull(message = "Role cannot be null")
 	    private Long roleId;
 	 
+	  private String firstName;  
+	    private String lastName;  
+	    private String districtId;   
+	    private String talukaId;  
 }

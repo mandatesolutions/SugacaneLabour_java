@@ -1,5 +1,7 @@
 package com.sugarcanelabour.model;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,6 +21,9 @@ public class RegistrationDto {
 	private String bloodGroup;
 	
 	private String address;
+	
+	private MultipartFile profileImage;
+
 	
 	 @NotBlank(message = "Email cannot be blank")
 	 @Email(message = "Invalid email format")

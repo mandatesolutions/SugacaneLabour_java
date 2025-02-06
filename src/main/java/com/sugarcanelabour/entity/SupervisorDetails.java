@@ -46,6 +46,11 @@ public class SupervisorDetails {
 		@UpdateTimestamp
 		private LocalDateTime updatedAt;
 
+		 @Column(name = "profile_image_url")
+		    private String profileImageUrl;
+		 
+		 @Column(name = "registered_by_id")
+		    private Long registeredById; 
 
 	    @OneToOne
 	    @JoinColumn(name = "common_login_id")

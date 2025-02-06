@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.SupervisorDetails;
@@ -24,11 +25,16 @@ public interface CommonLoginService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto);
 
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
+//	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
 
 	ResponseEntity<Object> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId);
+
+	
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
 
 	//ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
 
