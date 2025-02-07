@@ -22,6 +22,7 @@ import com.sugarcanelabour.repository.DocumentRepository;
 import com.sugarcanelabour.service.DocumentService;
 
 import io.jsonwebtoken.io.IOException;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
@@ -39,6 +40,7 @@ public class DocumentServiceImpl implements DocumentService{
 	    }
 
 	    @Override
+	    @Transactional
 	    public ResponseEntity<ApiResponse<String>> handleFileUploadWithMetadata(UploadDocumentDto uploadDocumentDto, Long commonLoginId) {
 	        if (uploadDocumentDto.getFile() == null || uploadDocumentDto.getFile().isEmpty()) {
 	            return ResponseEntity.badRequest().body(new ApiResponse<>("Error", "No file uploaded", null));

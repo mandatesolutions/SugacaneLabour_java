@@ -21,6 +21,7 @@ import com.sugarcanelabour.repository.DocumentRepository;
 import com.sugarcanelabour.repository.SupervisorDetailsRepository;
 import com.sugarcanelabour.service.SuperAdminService;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -37,6 +38,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
     private DocumentRepository documentRepository;
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDetails(Long userId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();
@@ -96,6 +98,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
     // Get Supervisor Details by userId
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorDetails(Long userId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();
@@ -157,6 +160,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(Long commonLoginId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();
@@ -214,6 +218,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(Long commonLoginId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();
@@ -293,6 +298,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
 
     @Override
+    @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();

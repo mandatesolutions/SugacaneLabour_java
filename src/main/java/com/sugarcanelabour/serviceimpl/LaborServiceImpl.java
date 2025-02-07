@@ -73,7 +73,8 @@ public class LaborServiceImpl implements LaborService{
 			this.redisTemplate = redisTemplate;
 		}
 
-
+        @Override
+        @Transactional
 	    public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(Long commonLoginId) {
 	        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
 	        Map<String, Object> data = new HashMap<>();
@@ -146,6 +147,7 @@ public class LaborServiceImpl implements LaborService{
 	    }
 
 	    @Override
+	    @Transactional
 	    public ResponseEntity<Map<String, Object>> generateLaborDetailsPdfAndSendEmail(Long commonLoginId, String recipientEmail) {
 	        Map<String, Object> response = new HashMap<>();
 	        

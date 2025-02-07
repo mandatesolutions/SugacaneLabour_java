@@ -82,6 +82,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	// Login with JWT token generation
 	//@Cacheable(value = "loginCache", key = "#request.email")
 	@Override
+	@Transactional
 	public ResponseEntity<ApiResponse<Map<String, Object>>> login(LoginRequest request) {
 		if (log.isInfoEnabled()) {
 			log.info("***** Inside CommonLoginServiceImpl - login *****");
@@ -201,6 +202,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	
 	//SUPER-ADMIN REGISTER
 	@Override
+	@Transactional
 	public ResponseEntity<ApiResponse<Map<String, Object>>> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
@@ -272,6 +274,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	
 	// supervisor register
 	@Override
+	@Transactional
 	public ResponseEntity<ApiResponse<Map<String, Object>>> registerSupervisor(RegistrationDto registrationDto) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
@@ -367,6 +370,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	// register co-worker
 
 	@Override
+	@Transactional
 	public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
@@ -532,6 +536,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 //	}
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
@@ -598,6 +603,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	}
 
 	@Override
+	@Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId) {
         ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
         Map<String, Object> response = new HashMap<>();
@@ -635,6 +641,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
     }
 	
 	@Override
+	@Transactional
 	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage) {
 	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 	    Map<String, Object> response = new HashMap<>();
@@ -757,6 +764,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 //	}
 
 	@Override
+	@Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId) {
         ApiResponse<Map<String, Object>> response = new ApiResponse<>();
         Map<String, Object> data = new HashMap<>();
@@ -800,6 +808,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	
 	 @Override
+	 @Transactional
 	    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails() {
 	        ApiResponse<List<Map<String, Object>>> response = new ApiResponse<>();
 	        List<Map<String, Object>> laborList = new ArrayList<>();
