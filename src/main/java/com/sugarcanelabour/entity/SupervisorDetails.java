@@ -46,6 +46,7 @@ public class SupervisorDetails {
 		@UpdateTimestamp
 		private LocalDateTime updatedAt;
 
+		@JsonIgnore
 		 @Column(name = "profile_image_url")
 		    private String profileImage;
 		 

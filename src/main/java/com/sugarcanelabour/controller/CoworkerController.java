@@ -1,7 +1,6 @@
 package com.sugarcanelabour.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -108,10 +107,4 @@ public class CoworkerController {
 	      // Return the response from the service
 	      return response;
 	  }
-	 
-	 @Operation(summary = "Get All Labor Details API", description = "This API is used to fetch details of all laborers")
-	    @GetMapping("/getAllLaborDetails")
-	    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails() {
-	        return commonLoginService.getAllLaborDetails();
-	    }
 }
