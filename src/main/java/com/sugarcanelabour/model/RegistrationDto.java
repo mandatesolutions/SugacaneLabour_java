@@ -2,6 +2,9 @@ package com.sugarcanelabour.model;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,6 +25,7 @@ public class RegistrationDto {
 	
 	private String address;
 	
+	@JsonIgnore
 	private MultipartFile profileImage;
 
 	

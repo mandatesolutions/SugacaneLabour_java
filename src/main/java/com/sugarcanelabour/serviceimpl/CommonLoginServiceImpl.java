@@ -336,8 +336,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        response.put("supervisorId", supervisorDetails.getId());
 	        response.put("districtId", supervisorDetails.getDistrictId());
 	        response.put("talukaId", supervisorDetails.getTalukaId());
-	        response.put("registeredById", registeredByUser.getUserId()); // Return who registered the supervisor
-	        response.put("registeredByRole", registeredByUser.getRole().getRoleName());
+	        
 
 //	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
 //	        supervisorDetails.setRegisteredById(registeredById); // Set the registeredById
@@ -360,13 +359,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 
 
-	
-	
-	
-	
-	
-	
-	
 	// register co-worker
 
 	@Override
