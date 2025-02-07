@@ -1,6 +1,7 @@
 package com.sugarcanelabour.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,8 @@ public interface CommonLoginService {
 	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage);
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
+
+	ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails();
 
 	//ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
 

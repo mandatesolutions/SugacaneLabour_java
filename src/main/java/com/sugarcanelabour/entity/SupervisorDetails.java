@@ -47,10 +47,11 @@ public class SupervisorDetails {
 		private LocalDateTime updatedAt;
 
 		 @Column(name = "profile_image_url")
-		    private String profileImageUrl;
+		    private String profileImage;
 		 
-		 @Column(name = "registered_by_id")
-		    private Long registeredById; 
+		 	@ManyToOne
+		    @JoinColumn(name = "registered_by_id")
+		    private CommonLogin registeredBy;  // Stores who registered this supervisor
 
 	    @OneToOne
 	    @JoinColumn(name = "common_login_id")

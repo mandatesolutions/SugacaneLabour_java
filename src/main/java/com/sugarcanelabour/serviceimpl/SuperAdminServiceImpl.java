@@ -321,7 +321,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
             response.setStatus("SUCCESS");
             response.setMessage("User deactivated successfully.");
             data.put("userId", commonLogin.getUserId());
-            data.put("status", "inactive");
+            data.put("status", "Inactive");
             response.setData(data);
 
             return new ResponseEntity<>(response, HttpStatus.OK);

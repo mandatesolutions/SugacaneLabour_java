@@ -23,4 +23,6 @@ public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long> 
 	@Query("SELECT c FROM CommonLogin c JOIN c.role r WHERE r.roleName = :roleName")
 	List<CommonLogin> findByRoleName(@Param("roleName") String roleName);
 //	CommonLogin findByUserEmail(String currentUsername);
+
+	List<CommonLogin> findByRole_RoleName(String string);
 }

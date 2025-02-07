@@ -41,9 +41,9 @@ public class RegistrationDto {
     private Long roleId;  
 	    
     
-    private long districtId;
+    private Long districtId;
     
-    private long talukaId;
+    private Long talukaId;
     
 	private Long age;
 	

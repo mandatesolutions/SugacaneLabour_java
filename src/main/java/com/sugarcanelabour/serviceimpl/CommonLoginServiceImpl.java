@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.entity.Document;
 import com.sugarcanelabour.entity.Role;
 import com.sugarcanelabour.entity.SupervisorDetails;
 import com.sugarcanelabour.exception.ResourceNotFoundException;
@@ -32,6 +35,7 @@ import com.sugarcanelabour.model.LoginRequest;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
 import com.sugarcanelabour.repository.CommonLoginRepository;
+import com.sugarcanelabour.repository.DocumentRepository;
 import com.sugarcanelabour.repository.RoleRepository;
 import com.sugarcanelabour.repository.SupervisorDetailsRepository;
 import com.sugarcanelabour.service.CommonLoginService;
@@ -54,6 +58,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	private JwtHelper jwtHelper;
 	private RedisTemplate<String, Object> redisTemplate;
 	private CommonFunctions commonFunctions;
+	private DocumentRepository documentRepository;
 	
 
 
@@ -63,7 +68,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	public CommonLoginServiceImpl(CommonLoginRepository loginRepository, PasswordEncoder passwordEncoder,
 			RoleRepository roleRepository, JwtHelper jwtHelper,SupervisorDetailsRepository supervisorDetailsRepository,RedisTemplate<String, Object> redisTemplate,
-			CommonFunctions commonFunctions) {
+			CommonFunctions commonFunctions,DocumentRepository documentRepository) {
 		this.loginRepository = loginRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
@@ -71,6 +76,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		this.supervisorDetailsRepository=supervisorDetailsRepository;
 		this.redisTemplate = redisTemplate;
 		this.commonFunctions=commonFunctions;
+		this.documentRepository=documentRepository;
 	}
 
 	// Login with JWT token generation
@@ -218,6 +224,9 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	            resp.setMessage(CommonMessages.CL_EMAIL_AE);
 	            return ResponseEntity.badRequest().body(resp);
 	        }
+	        
+	        // Fetch the currently logged-in user ID (who is registering this Super Admin)
+	       // Long registeredById = getLoggedInUserId(); 
 
 	        // Create and save the Super Admin
 	        CommonLogin superAdmin = new CommonLogin();
@@ -242,6 +251,10 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        response.put("userId", savedSuperAdmin.getUserId());
 	        response.put("email", savedSuperAdmin.getEmail());
 	        response.put("role", savedSuperAdmin.getRole().getRoleName());
+	        
+//	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
+//	        supervisorDetails.setRegisteredById(registeredById); // Set the registeredById
+	        
 
 	        resp.setStatus(CommonMessages.SUCCESS);
 	        resp.setMessage(CommonMessages.CL_REGISTER_SUCCESSFUL);
@@ -291,6 +304,13 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        commonLogin.setRole(roleOptional.get()); // Assign Supervisor role
 
 	        loginRepository.save(commonLogin);
+	        
+
+	        // Fetch the logged-in user as `registeredBy`**
+	        String loggedInEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+	        CommonLogin registeredByUser = loginRepository.findByEmail(loggedInEmail)
+	                .orElseThrow(() -> new RuntimeException("Logged-in user not found"));
+
 
 	        // Create SupervisorDetails entity
 	        SupervisorDetails supervisorDetails = new SupervisorDetails();
@@ -302,6 +322,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        supervisorDetails.setDistrictId(String.valueOf(registrationDto.getDistrictId()));
 	        supervisorDetails.setTalukaId(String.valueOf(registrationDto.getTalukaId()));
 	        supervisorDetails.setCommonLogin(commonLogin); // Link CommonLogin to SupervisorDetails
+	        supervisorDetails.setRegisteredBy(registeredByUser); // Store who registered this supervisor
 
 	        supervisorDetailsRepository.save(supervisorDetails);
 
@@ -312,7 +333,12 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        response.put("supervisorId", supervisorDetails.getId());
 	        response.put("districtId", supervisorDetails.getDistrictId());
 	        response.put("talukaId", supervisorDetails.getTalukaId());
+	        response.put("registeredById", registeredByUser.getUserId()); // Return who registered the supervisor
+	        response.put("registeredByRole", registeredByUser.getRole().getRoleName());
 
+//	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
+//	        supervisorDetails.setRegisteredById(registeredById); // Set the registeredById
+	        
 	        resp.setStatus("SUCCESS");
 	        resp.setMessage("Supervisor registered successfully.");
 	        resp.setData(response);
@@ -331,6 +357,13 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 
 
+	
+	
+	
+	
+	
+	
+	
 	// register co-worker
 
 	@Override
@@ -390,6 +423,9 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        response.put("bloodGroup",coworkerDetails.getBloodGroup());
 	        response.put("address", coworkerDetails.getAddress());
 	        
+//	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
+//	        coworkerDetails.setRegisteredById(registeredById); // Set the registeredById
+//	        
 
 	        resp.setStatus("SUCCESS");
 	        resp.setMessage("Co-worker registered successfully.");
@@ -533,6 +569,11 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	    if (laborUpdateRequest.getMedicalHistory() != null && !laborUpdateRequest.getMedicalHistory().trim().isEmpty()) {
 	        supervisorDetails.setMedicalHistory(laborUpdateRequest.getMedicalHistory());
 	    }
+	    if (laborUpdateRequest.getProfileImage() != null && !laborUpdateRequest.getProfileImage().isEmpty()) {
+	        supervisorDetails.setProfileImage(laborUpdateRequest.getProfileImage().getOriginalFilename()); // Update only if a new image is provided
+	    }
+
+
 	    // Add additional fields to update as needed, following the same pattern
 
 	    // Save the updated supervisor details
@@ -547,6 +588,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	    response.put("bloodGroup", supervisorDetails.getBloodGroup());
 	    response.put("districtId", supervisorDetails.getDistrictId());
 	    response.put("talukaId", supervisorDetails.getTalukaId());
+	    response.put("profileImage", supervisorDetails.getProfileImage());
 
 	    resp.setStatus(CommonMessages.SUCCESS);
 	    resp.setMessage("Labor details updated successfully.");
@@ -644,7 +686,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        // Handle profile image if present
 	        if (profileImage != null && !profileImage.isEmpty()) {
 	            String profileImageUrl = commonFunctions.saveLaborImage(profileImage);  // Pass the image here
-	            laborDetails.setProfileImageUrl(profileImageUrl);  // Set profile image URL in labor details
+	            laborDetails.setProfileImage(profileImageUrl);  // Set profile image URL in labor details
 	        }
 
 //	        // Generate the unique labor ID
@@ -673,14 +715,15 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	        response.put("medicalHistory", laborDetails.getMedicalHistory());
 	        response.put("age", laborDetails.getAge());
 	        response.put("familyMembers", laborDetails.getFamilyMembers());
+	        response.put("uniqueLaborId", laborDetails.getUniqueLaborId());
 	        
 
-	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
-	        laborDetails.setRegisteredById(registeredById); // Set the registeredById
+//	        Long registeredById = getLoggedInUserId();  // This method will fetch the logged-in user's ID (Supervisor or Co-worker)
+//	        laborDetails.setRegisteredById(registeredById); // Set the registeredById
 
 	        // Include the profile image URL if available
-	        if (laborDetails.getProfileImageUrl() != null) {
-	            response.put("profileImageUrl", laborDetails.getProfileImageUrl());
+	        if (laborDetails.getProfileImage() != null) {
+	            response.put("profileImageUrl", laborDetails.getProfileImage());
 	        }
 
 	        resp.setStatus("SUCCESS");
@@ -700,18 +743,18 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	    }
 	}
 	// This is a placeholder method to get the logged-in user's ID (supervisor or coworker)
-	private Long getLoggedInUserId() {
-	    // Logic to fetch logged-in user's ID, depending on how you're handling sessions/tokens.
-	    // Example: Retrieve the user from the security context or session.
-	    // Assuming you have a way to get the logged-in user's details (e.g., from the SecurityContextHolder).
-	    
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    if (authentication != null) {
-	        CommonLogin loggedInUser = (CommonLogin) authentication.getPrincipal();
-	        return loggedInUser.getUserId();  // Return the logged-in user's ID
-	    }
-	    return null; // Handle case where the logged-in user cannot be found
-	}
+//	private Long getLoggedInUserId() {
+//	    // Logic to fetch logged-in user's ID, depending on how you're handling sessions/tokens.
+//	    // Example: Retrieve the user from the security context or session.
+//	    // Assuming you have a way to get the logged-in user's details (e.g., from the SecurityContextHolder).
+//	    
+//	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//	    if (authentication != null) {
+//	        CommonLogin loggedInUser = (CommonLogin) authentication.getPrincipal();
+//	        return loggedInUser.getUserId();  // Return the logged-in user's ID
+//	    }
+//	    return null; // Handle case where the logged-in user cannot be found
+//	}
 
 	@Override
     public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId) {
@@ -755,5 +798,81 @@ public class CommonLoginServiceImpl implements CommonLoginService {
         }
     }
 
+	
+	 @Override
+	    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails() {
+	        ApiResponse<List<Map<String, Object>>> response = new ApiResponse<>();
+	        List<Map<String, Object>> laborList = new ArrayList<>();
+
+	        try {
+	            // Fetch all laborers from the database
+	            List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+
+	            if (labors.isEmpty()) {
+	                response.setStatus("FAILED");
+	                response.setMessage("No laborers found.");
+	                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	            }
+
+	            // Process each labor record
+	            for (CommonLogin commonLogin : labors) {
+	                Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(commonLogin);
+
+	                if (!supervisorDetailsOpt.isPresent()) {
+	                    continue; // Skip if no details found
+	                }
+
+	                SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+	                Map<String, Object> laborData = new HashMap<>();
+
+	                laborData.put("userId", commonLogin.getUserId());
+	                laborData.put("email", commonLogin.getEmail());
+	                laborData.put("role", commonLogin.getRole().getRoleName());
+	                laborData.put("mobileNo", commonLogin.getMobileNo());
+	                laborData.put("firstName", supervisorDetails.getFirstName());
+	                laborData.put("lastName", supervisorDetails.getLastName());
+	                laborData.put("gender", supervisorDetails.getGender());
+	                laborData.put("bloodGroup", supervisorDetails.getBloodGroup());
+	                laborData.put("address", supervisorDetails.getAddress());
+	                laborData.put("districtId", supervisorDetails.getDistrictId());
+	                laborData.put("talukaId", supervisorDetails.getTalukaId());
+	                laborData.put("age", supervisorDetails.getAge());
+	                laborData.put("familyMembers", supervisorDetails.getFamilyMembers());
+	                laborData.put("medicalHistory", supervisorDetails.getMedicalHistory());
+	                laborData.put("uniqueLaborId", supervisorDetails.getUniqueLaborId());
+
+	                // Fetch associated documents
+	                List<Document> documents = documentRepository.findByCommonLogin(commonLogin);
+
+	                if (!documents.isEmpty()) {
+	                    List<Map<String, String>> documentDetails = new ArrayList<>();
+
+	                    for (Document document : documents) {
+	                        Map<String, String> documentInfo = new HashMap<>();
+	                        documentInfo.put("documentType", document.getDocumentType().name());
+	                        documentInfo.put("documentLink", document.getDocumentLink());
+	                        documentDetails.add(documentInfo);
+	                    }
+
+	                    laborData.put("documents", documentDetails);
+	                } else {
+	                    laborData.put("documents", "No documents uploaded");
+	                }
+
+	                laborList.add(laborData);
+	            }
+
+	            response.setStatus("SUCCESS");
+	            response.setMessage("Labor details fetched successfully.");
+	            response.setData(laborList);
+
+	            return new ResponseEntity<>(response, HttpStatus.OK);
+
+	        } catch (Exception e) {
+	            response.setStatus("FAILED");
+	            response.setMessage("Error fetching labor details: " + e.getMessage());
+	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	        }
+	    }
 
 }
