@@ -18,7 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CommonFunctions {
 
-	 private static final String UPLOAD_DIR = "E:/New folder/Projects/filesUploadDir";  // Change to your desired location
+	
+	@Value("${file.upload.dir}")
+	private String UPLOAD_DIR;
+//	 private static final String UPLOAD_DIR = "E:/New folder/Projects/filesUploadDir";  // Change to your desired location
 
 	    public String saveLaborImage(MultipartFile image) throws Exception {
 	        if (image != null && !image.isEmpty()) {
