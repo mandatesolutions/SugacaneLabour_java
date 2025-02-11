@@ -528,8 +528,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	@Override
 	@Transactional
-	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto,
-			MultipartFile profileImage) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto) {
 		ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 		Map<String, Object> response = new HashMap<>();
 		Taluka talukaDetails = talukaRepo.findById(laborDto.getTalukaId()).orElseThrow(
@@ -578,8 +577,8 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			laborDetails.setTaluka(talukaDetails);
 
 			// Handle profile image if present
-			if (profileImage != null && !profileImage.isEmpty()) {
-				String profileImageUrl = commonFunctions.saveLaborImage(profileImage); // Pass the image here
+			if (laborDto.getProfileImage() != null && !laborDto.getProfileImage().isEmpty()) {
+				String profileImageUrl = commonFunctions.saveLaborImage(laborDto.getProfileImage()); // Pass the image here
 				laborDetails.setProfileImage(profileImageUrl); // Set profile image URL in labor details
 			}
 

@@ -33,7 +33,9 @@ public interface CommonLoginService {
 	ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId);
 
 	
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage);
+//	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage);
+	
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
 

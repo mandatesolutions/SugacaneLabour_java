@@ -55,11 +55,18 @@ public class CoworkerController {
 //	     return commonLoginService.registerLabor(registrationDto, profileImage);
 //	 }
 
+//	 @PostMapping("/register-laborer")
+//	 public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(
+//	         @ModelAttribute RegistrationDto registrationDto, // Use @ModelAttribute to bind the form data to DTO
+//	         @RequestParam("profileImage") MultipartFile profileImage) { // Use @RequestParam for file
+//	     return commonLoginService.registerLabor(registrationDto, profileImage);
+//	 }
+	 
 	 @PostMapping("/register-laborer")
 	 public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(
-	         @ModelAttribute RegistrationDto registrationDto, // Use @ModelAttribute to bind the form data to DTO
-	         @RequestParam("profileImage") MultipartFile profileImage) { // Use @RequestParam for file
-	     return commonLoginService.registerLabor(registrationDto, profileImage);
+	         @ModelAttribute RegistrationDto registrationDto // Use @ModelAttribute to bind the form data to DTO
+	         ) { // Use @RequestParam for file
+	     return commonLoginService.registerLabor(registrationDto);
 	 }
 
 
