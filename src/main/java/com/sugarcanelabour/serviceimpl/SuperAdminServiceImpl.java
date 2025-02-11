@@ -28,319 +28,314 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SuperAdminServiceImpl implements SuperAdminService {
 
-    @Autowired
-    private CommonLoginRepository loginRepository;
-    
-    @Autowired
-    private SupervisorDetailsRepository supervisorDetailsRepository;
-    
-    @Autowired
-    private DocumentRepository documentRepository;
+	@Autowired
+	private CommonLoginRepository loginRepository;
 
-    @Override
-    @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDetails(Long userId) {
-        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        Map<String, Object> data = new HashMap<>();
+	@Autowired
+	private SupervisorDetailsRepository supervisorDetailsRepository;
 
-        try {
-            // Fetch Admin's CommonLogin details
-            Optional<CommonLogin> adminOptional = loginRepository.findById(userId);
-            if (adminOptional.isEmpty()) {
-                response.setStatus("FAILED");
-                response.setMessage("Admin not found");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+	@Autowired
+	private DocumentRepository documentRepository;
 
-            CommonLogin admin = adminOptional.get();
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDetails(Long userId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
 
-            // Check if the role is ADMIN
-            if (!"ROLE_ADMIN".equalsIgnoreCase(admin.getRole().getRoleName())) {
-                response.setStatus("FAILED");
-                response.setMessage("User is not an admin.");
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
+		try {
+			// Fetch Admin's CommonLogin details
+			Optional<CommonLogin> adminOptional = loginRepository.findById(userId);
+			if (adminOptional.isEmpty()) {
+				response.setStatus("FAILED");
+				response.setMessage("Admin not found");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            // Fetch admin's personal details
-            Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(admin);
-            if (!supervisorDetailsOpt.isPresent()) {
-                response.setStatus("FAILED");
-                response.setMessage("Admin details not found");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+			CommonLogin admin = adminOptional.get();
 
-            SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+			// Check if the role is ADMIN
+			if (!"ROLE_ADMIN".equalsIgnoreCase(admin.getRole().getRoleName())) {
+				response.setStatus("FAILED");
+				response.setMessage("User is not an admin.");
+				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+			}
 
-            // Collect admin details
-            data.put("userId", admin.getUserId());
-            data.put("email", admin.getEmail());
-            data.put("role", admin.getRole().getRoleName());
-            data.put("firstName", supervisorDetails.getFirstName());
-            data.put("lastName", supervisorDetails.getLastName());
-            data.put("districtId", supervisorDetails.getDistrictId());
-            data.put("talukaId", supervisorDetails.getTalukaId());
+			// Fetch admin's personal details
+			Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(admin);
+			if (!supervisorDetailsOpt.isPresent()) {
+				response.setStatus("FAILED");
+				response.setMessage("Admin details not found");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            // Success response
-            response.setStatus("SUCCESS");
-            response.setMessage("Admin details fetched successfully.");
-            response.setData(data);
+			SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
+			// Collect admin details
+			data.put("userId", admin.getUserId());
+			data.put("email", admin.getEmail());
+			data.put("role", admin.getRole().getRoleName());
+			data.put("firstName", supervisorDetails.getFirstName());
+			data.put("lastName", supervisorDetails.getLastName());
+			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
 
-        } catch (Exception e) {
-            // Error handling
-            response.setStatus("FAILED");
-            response.setMessage("Error fetching admin details: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+			// Success response
+			response.setStatus("SUCCESS");
+			response.setMessage("Admin details fetched successfully.");
+			response.setData(data);
 
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
-    // Get Supervisor Details by userId
-    @Override
-    @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorDetails(Long userId) {
-        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        Map<String, Object> data = new HashMap<>();
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus("FAILED");
+			response.setMessage("Error fetching admin details: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        try {
-            // Fetch Supervisor's CommonLogin details
-            CommonLogin commonLogin = loginRepository.findByUserId(userId);
-            if (commonLogin == null) {
-                response.setStatus("FAILED");
-                response.setMessage("Supervisor not found.");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+	// Get Supervisor Details by userId
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorDetails(Long userId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
 
-            // Check if the role is SUPERVISOR
-            if (!"ROLE_SUPERVISOR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
-                response.setStatus("FAILED");
-                response.setMessage("User is not a supervisor.");
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
+		try {
+			// Fetch Supervisor's CommonLogin details
+			CommonLogin commonLogin = loginRepository.findByUserId(userId);
+			if (commonLogin == null) {
+				response.setStatus("FAILED");
+				response.setMessage("Supervisor not found.");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            // Fetch SupervisorDetails by CommonLogin
-            Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository
-                    .findByCommonLogin(commonLogin);
-            if (!supervisorDetailsOpt.isPresent()) {
-                response.setStatus("FAILED");
-                response.setMessage("Supervisor details not found.");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+			// Check if the role is SUPERVISOR
+			if (!"ROLE_SUPERVISOR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
+				response.setStatus("FAILED");
+				response.setMessage("User is not a supervisor.");
+				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+			}
 
-            SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+			// Fetch SupervisorDetails by CommonLogin
+			Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository
+					.findByCommonLogin(commonLogin);
+			if (!supervisorDetailsOpt.isPresent()) {
+				response.setStatus("FAILED");
+				response.setMessage("Supervisor details not found.");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            // Collect supervisor details
-            data.put("userId", commonLogin.getUserId());
-            data.put("email", commonLogin.getEmail());
-            data.put("role", commonLogin.getRole().getRoleName());
-            data.put("supervisorId", supervisorDetails.getId());
-            data.put("firstName", supervisorDetails.getFirstName());
-            data.put("lastName", supervisorDetails.getLastName());
-            data.put("gender", supervisorDetails.getGender());
-            data.put("bloodGroup", supervisorDetails.getBloodGroup());
-            data.put("address", supervisorDetails.getAddress());
-            data.put("districtId", supervisorDetails.getDistrictId());
-            data.put("talukaId", supervisorDetails.getTalukaId());
+			SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
 
-            // Success response
-            response.setStatus("SUCCESS");
-            response.setMessage("Supervisor details fetched successfully.");
-            response.setData(data);
+			// Collect supervisor details
+			data.put("userId", commonLogin.getUserId());
+			data.put("email", commonLogin.getEmail());
+			data.put("role", commonLogin.getRole().getRoleName());
+			data.put("supervisorId", supervisorDetails.getId());
+			data.put("firstName", supervisorDetails.getFirstName());
+			data.put("lastName", supervisorDetails.getLastName());
+			data.put("gender", supervisorDetails.getGender());
+			data.put("bloodGroup", supervisorDetails.getBloodGroup());
+			data.put("address", supervisorDetails.getAddress());
+			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
+			// Success response
+			response.setStatus("SUCCESS");
+			response.setMessage("Supervisor details fetched successfully.");
+			response.setData(data);
 
-        } catch (Exception e) {
-            // Error handling
-            response.setStatus("FAILED");
-            response.setMessage("Error fetching supervisor details: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus("FAILED");
+			response.setMessage("Error fetching supervisor details: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    @Override
-    @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(Long commonLoginId) {
-        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        Map<String, Object> data = new HashMap<>();
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(Long commonLoginId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
 
-        try {
-            // Fetch CommonLogin details
-            CommonLogin commonLogin = loginRepository.findById(commonLoginId)
-                    .orElseThrow(() -> new RuntimeException("Coworker not found"));
+		try {
+			// Fetch CommonLogin details
+			CommonLogin commonLogin = loginRepository.findById(commonLoginId)
+					.orElseThrow(() -> new RuntimeException("Coworker not found"));
 
-            // Check if the role is COWORKER
-            if (!"ROLE_COWORKER".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
-                response.setStatus("FAILED");
-                response.setMessage("User is not a coworker.");
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
+			// Check if the role is COWORKER
+			if (!"ROLE_COWORKER".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
+				response.setStatus("FAILED");
+				response.setMessage("User is not a coworker.");
+				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+			}
 
-            // Fetch supervisor details (used for both supervisors and coworkers)
-            Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(commonLogin);
+			// Fetch supervisor details (used for both supervisors and coworkers)
+			Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository
+					.findByCommonLogin(commonLogin);
 
-            if (!supervisorDetailsOpt.isPresent()) {
-                response.setStatus("FAILED");
-                response.setMessage("Coworker details not found.");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+			if (!supervisorDetailsOpt.isPresent()) {
+				response.setStatus("FAILED");
+				response.setMessage("Coworker details not found.");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+			SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
 
-            // Collect coworker details
-            data.put("userId", commonLogin.getUserId());
-            data.put("email", commonLogin.getEmail());
-            data.put("role", commonLogin.getRole().getRoleName());
-            data.put("coworkerId", supervisorDetails.getId());
-            data.put("firstName", supervisorDetails.getFirstName());
-            data.put("lastName", supervisorDetails.getLastName());
-            data.put("gender", supervisorDetails.getGender());
-            data.put("bloodGroup", supervisorDetails.getBloodGroup());
-            data.put("address", supervisorDetails.getAddress());
-            data.put("districtId", supervisorDetails.getDistrictId());
-            data.put("talukaId", supervisorDetails.getTalukaId());
+			// Collect coworker details
+			data.put("userId", commonLogin.getUserId());
+			data.put("email", commonLogin.getEmail());
+			data.put("role", commonLogin.getRole().getRoleName());
+			data.put("coworkerId", supervisorDetails.getId());
+			data.put("firstName", supervisorDetails.getFirstName());
+			data.put("lastName", supervisorDetails.getLastName());
+			data.put("gender", supervisorDetails.getGender());
+			data.put("bloodGroup", supervisorDetails.getBloodGroup());
+			data.put("address", supervisorDetails.getAddress());
+			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
 
-            // Success response
-            response.setStatus("SUCCESS");
-            response.setMessage("Coworker details fetched successfully.");
-            response.setData(data);
+			// Success response
+			response.setStatus("SUCCESS");
+			response.setMessage("Coworker details fetched successfully.");
+			response.setData(data);
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch (Exception e) {
-            // Error handling
-            response.setStatus("FAILED");
-            response.setMessage("Error fetching coworker details: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus("FAILED");
+			response.setMessage("Error fetching coworker details: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(Long commonLoginId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
 
-    @Override
-    @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(Long commonLoginId) {
-        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        Map<String, Object> data = new HashMap<>();
+		try {
+			// Fetch CommonLogin details
+			CommonLogin commonLogin = loginRepository.findById(commonLoginId)
+					.orElseThrow(() -> new RuntimeException("Labor not found"));
 
-        try {
-            // Fetch CommonLogin details
-            CommonLogin commonLogin = loginRepository.findById(commonLoginId)
-                    .orElseThrow(() -> new RuntimeException("Labor not found"));
+			// Check if the role is LABOR
+			if (!"ROLE_LABOR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
+				response.setStatus("FAILED");
+				response.setMessage("User is not a laborer.");
+				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+			}
 
-            // Check if the role is LABOR
-            if (!"ROLE_LABOR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
-                response.setStatus("FAILED");
-                response.setMessage("User is not a laborer.");
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
+			// Fetch supervisor details (reusing SupervisorDetails entity for labor)
+			Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository
+					.findByCommonLogin(commonLogin);
 
-            // Fetch supervisor details (reusing SupervisorDetails entity for labor)
-            Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(commonLogin);
+			if (!supervisorDetailsOpt.isPresent()) {
+				response.setStatus("FAILED");
+				response.setMessage("Supervisor details not found.");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-            if (!supervisorDetailsOpt.isPresent()) {
-                response.setStatus("FAILED");
-                response.setMessage("Supervisor details not found.");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+			SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
 
-            SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+			// Collect labor details
+			data.put("userId", commonLogin.getUserId());
+			data.put("email", commonLogin.getEmail());
+			data.put("role", commonLogin.getRole().getRoleName());
+			data.put("mobileNo", commonLogin.getMobileNo());
+			data.put("firstName", supervisorDetails.getFirstName());
+			data.put("lastName", supervisorDetails.getLastName());
+			data.put("gender", supervisorDetails.getGender());
+			data.put("bloodGroup", supervisorDetails.getBloodGroup());
+			data.put("address", supervisorDetails.getAddress());
+			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("age", supervisorDetails.getAge());
+			data.put("familyMembers", supervisorDetails.getFamilyMembers());
+			data.put("medicalHistory", supervisorDetails.getMedicalHistory());
+			data.put("uniqueLaborId", supervisorDetails.getUniqueLaborId());
 
-            // Collect labor details
-            data.put("userId", commonLogin.getUserId());
-            data.put("email", commonLogin.getEmail());
-            data.put("role", commonLogin.getRole().getRoleName());
-            data.put("mobileNo", commonLogin.getMobileNo());
-            data.put("firstName", supervisorDetails.getFirstName());
-            data.put("lastName", supervisorDetails.getLastName());
-            data.put("gender", supervisorDetails.getGender());
-            data.put("bloodGroup", supervisorDetails.getBloodGroup());
-            data.put("address", supervisorDetails.getAddress());
-            data.put("districtId", supervisorDetails.getDistrictId());
-            data.put("talukaId", supervisorDetails.getTalukaId());
-            data.put("age", supervisorDetails.getAge());
-            data.put("familyMembers", supervisorDetails.getFamilyMembers());
-            data.put("medicalHistory", supervisorDetails.getMedicalHistory());
-            data.put("uniqueLaborId", supervisorDetails.getUniqueLaborId());
+			// Fetch documents associated with the labor
+			List<Document> documents = documentRepository.findByCommonLogin(commonLogin);
 
-            // Fetch documents associated with the labor
-            List<Document> documents = documentRepository.findByCommonLogin(commonLogin);
+			if (!documents.isEmpty()) {
+				List<Map<String, String>> documentDetails = new ArrayList<>();
 
-            if (!documents.isEmpty()) {
-                List<Map<String, String>> documentDetails = new ArrayList<>();
+				for (Document document : documents) {
+					Map<String, String> documentInfo = new HashMap<>();
+					documentInfo.put("documentType", document.getDocumentType().name());
+					documentInfo.put("documentLink", document.getDocumentLink());
+					documentDetails.add(documentInfo);
+				}
 
-                for (Document document : documents) {
-                    Map<String, String> documentInfo = new HashMap<>();
-                    documentInfo.put("documentType", document.getDocumentType().name());
-                    documentInfo.put("documentLink", document.getDocumentLink());
-                    documentDetails.add(documentInfo);
-                }
+				data.put("documents", documentDetails);
+			} else {
+				data.put("documents", "No documents uploaded");
+			}
 
-                data.put("documents", documentDetails);
-            } else {
-                data.put("documents", "No documents uploaded");
-            }
+			// Success response
+			response.setStatus("SUCCESS");
+			response.setMessage("Labor details fetched successfully.");
+			response.setData(data);
 
-            // Success response
-            response.setStatus("SUCCESS");
-            response.setMessage("Labor details fetched successfully.");
-            response.setData(data);
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus("FAILED");
+			response.setMessage("Error fetching labor details: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-        } catch (Exception e) {
-            // Error handling
-            response.setStatus("FAILED");
-            response.setMessage("Error fetching labor details: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
 
+		try {
+			// Fetch CommonLogin details using userId
+			CommonLogin commonLogin = loginRepository.findByUserId(userId);
+			if (commonLogin == null) {
+				response.setStatus("FAILED");
+				response.setMessage("User not found.");
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
 
-    @Override
-    @Transactional
-    public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId) {
-        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-        Map<String, Object> data = new HashMap<>();
+			// Check if the user is already inactive
+			if (UserStatus.IN_ACTIVE.equals(commonLogin.getStatus())) {
+				response.setStatus("FAILED");
+				response.setMessage("User is already inactive.");
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
 
-        try {
-            // Fetch CommonLogin details using userId
-            CommonLogin commonLogin = loginRepository.findByUserId(userId);
-            if (commonLogin == null) {
-                response.setStatus("FAILED");
-                response.setMessage("User not found.");
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+			// Update user status to INACTIVE
+			commonLogin.setStatus(UserStatus.IN_ACTIVE);
+			loginRepository.save(commonLogin);
 
-            // Check if the user is already inactive
-            if (UserStatus.IN_ACTIVE.equals(commonLogin.getStatus())) {
-                response.setStatus("FAILED");
-                response.setMessage("User is already inactive.");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
+			// Success response
+			response.setStatus("SUCCESS");
+			response.setMessage("User deactivated successfully.");
+			data.put("userId", commonLogin.getUserId());
+			data.put("status", "Inactive");
+			response.setData(data);
 
-            // Update user status to INACTIVE
-            commonLogin.setStatus(UserStatus.IN_ACTIVE);
-            loginRepository.save(commonLogin);
+			return new ResponseEntity<>(response, HttpStatus.OK);
 
-            // Success response
-            response.setStatus("SUCCESS");
-            response.setMessage("User deactivated successfully.");
-            data.put("userId", commonLogin.getUserId());
-            data.put("status", "Inactive");
-            response.setData(data);
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus("FAILED");
+			response.setMessage("Error deactivating user: " + e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
-        } catch (Exception e) {
-            // Error handling
-            response.setStatus("FAILED");
-            response.setMessage("Error deactivating user: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-
-    
 }

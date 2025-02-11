@@ -65,34 +65,31 @@ public class CommonLogin {
 
 	@Enumerated(EnumType.STRING)
 	@JsonIgnore
-	private UserStatus status= UserStatus.ACTIVE;
-	
-	
-	@Column(unique = true, nullable = false, updatable = false)
+	private UserStatus status = UserStatus.ACTIVE;
+
+	@Column(unique = true, nullable = true, updatable = false)
 	private String uuid;
-	
-    // Method to generate UUID only for 'ROLE_LABOR'
+
+	// Method to generate UUID only for 'ROLE_LABOR'
 	@PrePersist
 	private void prePersist() {
-	    if (this.role != null && "ROLE_LABOR".equals(this.role.getRoleName())) {
-	        if (this.uuid == null) {
-	            this.uuid = generateUniqueNumber();  // Generate unique numeric-like UUID
-	            System.out.println("UUID generated for ROLE_LABOR: " + this.uuid);
-	        }
-	    }
+
+		if (this.uuid == null) {
+			this.uuid = generateUniqueNumber(); // Generate unique numeric-like UUID
+			System.out.println("UUID generated for ROLE_LABOR: " + this.uuid);
+
+		}
 	}
 
 	private String generateUniqueNumber() {
-	    UUID uuid = UUID.randomUUID();  // Generate a random UUID
-	    long mostSigBits = uuid.getMostSignificantBits();  // Get the most significant bits of UUID
-	    long leastSigBits = uuid.getLeastSignificantBits();  // Get the least significant bits of UUID
+		UUID uuid = UUID.randomUUID(); // Generate a random UUID
+		long mostSigBits = uuid.getMostSignificantBits(); // Get the most significant bits of UUID
+		long leastSigBits = uuid.getLeastSignificantBits(); // Get the least significant bits of UUID
 
-	    // Combine both to generate a unique number and ensure it’s positive
-	    long uniqueNumber = Math.abs(mostSigBits ^ leastSigBits);
+		// Combine both to generate a unique number and ensure it’s positive
+		long uniqueNumber = Math.abs(mostSigBits ^ leastSigBits);
 
-	    return "LBR-" + uniqueNumber;  // Prefix with 'LBR-' to match your desired format
+		return "LBR-" + uniqueNumber; // Prefix with 'LBR-' to match your desired format
 	}
 
-
-	
 }

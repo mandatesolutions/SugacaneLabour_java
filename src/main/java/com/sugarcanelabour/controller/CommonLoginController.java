@@ -22,31 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/sclm/common-login")
 public class CommonLoginController {
 
-	@Autowired
 	private CommonLoginService loginService;
 
-//	@PostMapping("/login")
-//	public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-//	    System.out.println("Login attempt with email: " + request.getEmail()); // Debug print
-//	    try {
-//	        String result = loginService.login(request.getEmail(), request.getPassword());
-//	        return ResponseEntity.ok(result);
-//	    } catch (IllegalArgumentException e) {
-//	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//	    }
-//	}
+	public CommonLoginController(CommonLoginService loginService) {
+		super();
+		this.loginService = loginService;
+	}
 
 	@Operation(summary = "User Login API", description = "This API allows users to log in with their credentials.")
 	@PostMapping("/login")
-	ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid @RequestBody LoginRequest request)
-			throws Exception {
-		log.info("***** Inside SuperAdminController - login *****");
+	ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid @RequestBody LoginRequest request) throws Exception {
+		if (log.isInfoEnabled()) {
+			log.info("***** Inside CommonLoginController - login *****");
+		}
 		return loginService.login(request);
 	}
-
-//	  @PostMapping("/register-supervisor")
-//	    public ResponseEntity<CommonLogin> registerSupervisor(@RequestBody SupervisorRegistrationDto supervisorDto) {
-//	        CommonLogin registeredSupervisor = loginService.registerSupervisor(supervisorDto);
-//	        return ResponseEntity.status(HttpStatus.CREATED).body(registeredSupervisor);
-//	    }
 }

@@ -22,23 +22,23 @@ import com.sugarcanelabour.repository.TalukaRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
-
 @RestController
 @RequestMapping("/sclm/district")
 @Slf4j
 public class DistrictController {
-	
+
 	private DistrictRepository districtRepo;
 	private TalukaRepository talukaRepo;
 	private RedisTemplate<String, Object> redisTemplate;
 
-	public DistrictController(DistrictRepository districtRepo, TalukaRepository talukaRepo,RedisTemplate<String, Object> redisTemplate) {
-	
+	public DistrictController(DistrictRepository districtRepo, TalukaRepository talukaRepo,
+			RedisTemplate<String, Object> redisTemplate) {
+
 		super();
 		this.districtRepo = districtRepo;
 		this.talukaRepo = talukaRepo;
 		this.redisTemplate = redisTemplate;
-		
+
 	}
 
 	@Transactional
@@ -53,21 +53,25 @@ public class DistrictController {
 		if (cachedData != null) {
 			return new ResponseEntity<>(cachedData, HttpStatus.OK); // Return cached data if available
 		}
-		
 		List<District> data = districtRepo.findAll();
 		response.put("getAllDistrictData", data);
 		redisTemplate.opsForValue().set(redisKey, response, 10, TimeUnit.DAYS); // Cache for 1 minute
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-
 	@Operation(summary = "Get Talukas API", description = "This API is used to get various talukas by district Id")
 	@GetMapping("/getTalukas/{districtId}")
 	ResponseEntity<Object> getAllTalukas(@PathVariable long districtId) {
 		log.info("***** Inside - DistrictController - getAllTalukas *****");
 		Map<Object, Object> response = new HashMap<>();
+		String redisKey = "cacheData";
+		Object cachedData = redisTemplate.opsForValue().get(redisKey);
+		if (cachedData != null) {
+			return new ResponseEntity<>(cachedData, HttpStatus.OK); // Return cached data if available
+		}
 		List<Taluka> data = talukaRepo.findByDistrictDistrictId(districtId);
 		response.put("getAllTalukasData", data);
+		redisTemplate.opsForValue().set(redisKey, response, 10, TimeUnit.DAYS); // Cache for 1 minute
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
