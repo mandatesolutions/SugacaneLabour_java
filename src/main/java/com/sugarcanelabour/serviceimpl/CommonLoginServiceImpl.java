@@ -138,7 +138,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		}
 
 		// For Supervisor and Co-worker, add additional fields from RegistrationDto
-		if (role.equals("ROLE_SUPERVISOR") || role.equals("ROLE_CO-WORKER")) {
+		if (role.equals("ROLE_SUPERVISOR") || role.equals("ROLE_COWORKER")) {
 			Optional<SupervisorDetails> supervisorDetailsOptional = supervisorDetailsRepository
 					.findByCommonLogin(user.get());
 
@@ -358,7 +358,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 						"Taluka with the Id" + registrationDto.getTalukaId() + " not found"));
 		try {
 			// Fetch Co-worker Role
-			Optional<Role> roleOptional = roleRepository.findByRoleName("ROLE_CO-WORKER");
+			Optional<Role> roleOptional = roleRepository.findByRoleName("ROLE_COWORKER");
 			if (roleOptional.isEmpty()) {
 				resp.setStatus("FAILED");
 				resp.setMessage("Co-worker role not found.");
