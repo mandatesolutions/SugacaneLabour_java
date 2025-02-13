@@ -64,7 +64,7 @@ public class DistrictController {
 	ResponseEntity<Object> getAllTalukas(@PathVariable long districtId) {
 		log.info("***** Inside - DistrictController - getAllTalukas *****");
 		Map<Object, Object> response = new HashMap<>();
-		String redisKey = "cacheData";
+		String redisKey = "cacheData:" + districtId;
 		Object cachedData = redisTemplate.opsForValue().get(redisKey);
 		if (cachedData != null) {
 			return new ResponseEntity<>(cachedData, HttpStatus.OK); // Return cached data if available

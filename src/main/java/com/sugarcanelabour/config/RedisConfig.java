@@ -10,7 +10,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,128 +22,108 @@ import io.lettuce.core.resource.DefaultClientResources;
 @Configuration
 @EnableCaching
 public class RedisConfig {
-	@Value("${spring.redis.host}")
-	String redisHost;
-	@Value("${spring.redis.port}")
-	int redisPort;
-	@Value("${spring.redis.password}")
-	String redisPassword;
 
-	@Bean
-	@Profile("prod")
-	public RedisConnectionFactory redisConnectionFactoryProd() {
-		RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-		redisConfig.setHostName(redisHost);
-		redisConfig.setPort(redisPort);
-		redisConfig.setPassword(redisPassword);
+    @Value("${spring.redis.host}")
+    private String redisHost;
 
-		// Create the pooling configuration for Lettuce
-		GenericObjectPoolConfig<?> poolConfig = createLettucePoolConfig("prod");
+    @Value("${spring.redis.port}")
+    private int redisPort;
 
-		// Create a Lettuce connection factory with the pooling configuration
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfig);
+    @Value("${spring.redis.password:}") // Default to empty string if not set
+    private String redisPassword;
 
-		// Enable non-blocking connections
-		lettuceConnectionFactory.setShareNativeConnection(false);
+    /**
+     * Production Redis Configuration
+     */
+    @Bean
+    @Profile("prod")
+    public RedisConnectionFactory redisConnectionFactoryProd() {
+        return createLettuceConnectionFactory("prod");
+    }
 
-		// Configure connection pooling
-		lettuceConnectionFactory.setClientResources(createLettuceClientResources(poolConfig));
+    /**
+     * Development Redis Configuration
+     */
+    @Bean
+    @Profile("dev")
+    public RedisConnectionFactory redisConnectionFactoryDev() {
+        return createLettuceConnectionFactory("dev");
+    }
 
-		return lettuceConnectionFactory;
-	}
+    /**
+     * Local Redis Configuration
+     */
+    @Bean
+    @Profile("local")
+    public RedisConnectionFactory redisConnectionFactoryLocal() {
+        return createLettuceConnectionFactory("local");
+    }
 
-	private GenericObjectPoolConfig<?> createLettucePoolConfig(String env) {
-		if (env.equals("prod")) {
-			GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
-			poolConfig.setMaxTotal(200); // Increase the connection limit based on load testing
-			poolConfig.setMaxIdle(100); // Max number of idle connections
-			poolConfig.setMinIdle(50); // Min number of idle connections
-			poolConfig.setTestOnBorrow(true); // Enable connection validation
-			poolConfig.setTestOnReturn(true);
-			poolConfig.setTestWhileIdle(true);
-			poolConfig.setTimeBetweenEvictionRunsMillis(30000); // Connection eviction
-			return poolConfig;
-		} else {
-			GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
-			poolConfig.setMaxTotal(10); // Increase the connection limit based on load testing
-			poolConfig.setMaxIdle(10); // Max number of idle connections
-			poolConfig.setMinIdle(10); // Min number of idle connections
-			poolConfig.setTestOnBorrow(true); // Enable connection validation
-			poolConfig.setTestOnReturn(true);
-			poolConfig.setTestWhileIdle(true);
-			poolConfig.setTimeBetweenEvictionRunsMillis(30000); // Connection eviction
-			return poolConfig;
-		}
-	}
+    /**
+     * Creates a Redis connection factory with environment-specific settings.
+     */
+    private RedisConnectionFactory createLettuceConnectionFactory(String env) {
+        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
+        if (!redisPassword.isEmpty()) {
+            redisConfig.setPassword(redisPassword);
+        }
 
-	private ClientResources createLettuceClientResources(GenericObjectPoolConfig<?> poolConfig) {
-		// Create a DefaultClientResources object with the pool configuration
-		return DefaultClientResources.create();
-	}
+        // Create Lettuce connection factory with appropriate pool configuration
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfig);
+        lettuceConnectionFactory.setShareNativeConnection(false);
+        lettuceConnectionFactory.setClientResources(createLettuceClientResources(createLettucePoolConfig(env)));
 
-	@Bean
-	@Profile("dev")
-	public RedisConnectionFactory redisConnectionFactoryDev() {
-		RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-		redisConfig.setHostName(redisHost);
-		redisConfig.setPort(redisPort);
-		redisConfig.setPassword(redisPassword);
+        return lettuceConnectionFactory;
+    }
 
-		// Create the pooling configuration for Lettuce
-		GenericObjectPoolConfig<?> poolConfig = createLettucePoolConfig("dev");
+    /**
+     * Creates a GenericObjectPoolConfig based on the environment.
+     */
+    private GenericObjectPoolConfig<?> createLettucePoolConfig(String env) {
+        GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
+        if ("prod".equals(env)) {
+            poolConfig.setMaxTotal(200);
+            poolConfig.setMaxIdle(100);
+            poolConfig.setMinIdle(50);
+        } else {
+            poolConfig.setMaxTotal(10);
+            poolConfig.setMaxIdle(10);
+            poolConfig.setMinIdle(5);
+        }
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setTestOnReturn(true);
+        poolConfig.setTestWhileIdle(true);
+        poolConfig.setTimeBetweenEvictionRunsMillis(30000);
+        return poolConfig;
+    }
 
-		// Create a Lettuce connection factory with the pooling configuration
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfig);
+    /**
+     * Creates ClientResources for Lettuce with proper resource management.
+     */
+    private ClientResources createLettuceClientResources(GenericObjectPoolConfig<?> poolConfig) {
+        return DefaultClientResources.create();
+    }
 
-		// Enable non-blocking connections
-		lettuceConnectionFactory.setShareNativeConnection(false);
+    /**
+     * Configures RedisTemplate with JSON serialization.
+     */
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
-		// Configure connection pooling
-		lettuceConnectionFactory.setClientResources(createLettuceClientResources(poolConfig));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-		return lettuceConnectionFactory;
-	}
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        serializer.setObjectMapper(objectMapper);
 
-	@Bean
-	@Profile("local")
-	public RedisConnectionFactory redisConnectionFactoryLocal() {
-		RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-		redisConfig.setHostName(redisHost);
-		redisConfig.setPort(redisPort);
+        template.setKeySerializer(serializer);
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(serializer);
+        template.setHashValueSerializer(serializer);
 
-		// Create the pooling configuration for Lettuce
-		GenericObjectPoolConfig<?> poolConfig = createLettucePoolConfig("local");
-
-		// Create a Lettuce connection factory with the pooling configuration
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfig);
-
-		// Enable non-blocking connections
-		lettuceConnectionFactory.setShareNativeConnection(false);
-
-		// Configure connection pooling
-		lettuceConnectionFactory.setClientResources(createLettuceClientResources(poolConfig));
-
-		return lettuceConnectionFactory;
-	}
-
-	@Bean
-	RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-		RedisTemplate<String, Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-
-		// Configure the Jackson JSON Redis serializer
-		Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-		// Create ObjectMapper and register JavaTimeModule for LocalDateTime handling
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-		// Use this ObjectMapper for serialization and deserialization
-		GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
-
-		// Set the serializer to RedisTemplate
-		template.setDefaultSerializer(jsonRedisSerializer);
-		return template;
-	}
+        return template;
+    }
 }
