@@ -35,9 +35,6 @@ public class LabourController {
 	@Autowired
 	private LaborService laborService;
 
-    private static final String PDF_DIRECTORY = "E://New folder//Projects//PDF labor"; // Define the directory where PDFs are saved
-    private static final String PUBLIC_URL = "/download/pdf/"; // Public URL path to access PDFs
-
 
 	  @Operation(summary = "Get Labor Information", description = "Fetches labor information including their personal details and uploaded documents.")
 	    @GetMapping("/getLaborDetails/{commonLoginId}")
@@ -53,6 +50,4 @@ public class LabourController {
 	      // Call the service method that generates the PDF and sends the email
 	      return laborService.generateLaborDetailsPdfAndSendEmail(commonLoginId, recipientEmail);
 	  }
-
-	 
 }

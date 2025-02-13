@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @RequestMapping("/sclm/coworker")
+@Validated
 public class CoworkerController {
 	
 	private CommonLoginService commonLoginService;
@@ -63,9 +65,8 @@ public class CoworkerController {
 //	 }
 	 
 	 @PostMapping("/register-laborer")
-	 public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(
-	         @ModelAttribute RegistrationDto registrationDto // Use @ModelAttribute to bind the form data to DTO
-	         ) { // Use @RequestParam for file
+	 public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(@ModelAttribute RegistrationDto registrationDto )// Use @ModelAttribute to bind the form data to DTO
+	 { // Use @RequestParam for file
 	     return commonLoginService.registerLabor(registrationDto);
 	 }
 

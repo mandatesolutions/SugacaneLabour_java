@@ -25,7 +25,6 @@ public class RegistrationDto {
 
 	private String address;
 
-	@JsonIgnore
 	private MultipartFile profileImage;
 
 	@NotBlank(message = "Email cannot be blank")

@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CommonFunctions {
 
 	
-	@Value("${file.upload.dir}")
+	@Value("${UPLOAD_PROFILEIMAGE}")
 	private String UPLOAD_DIR;
 //	 private static final String UPLOAD_DIR = "E:/New folder/Projects/filesUploadDir";  // Change to your desired location
 
