@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DocumentServiceImpl implements DocumentService{
 	
-	 @Value("${file.upload.dir}")
+	 @Value("${UPLOAD_DOCUMENTS}")
 	    private String uploadDir;
 
 	    private final DocumentRepository documentRepository;

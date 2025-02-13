@@ -49,9 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommonLoginServiceImpl implements CommonLoginService {
 
-	@Value("${file.upload-dir:E://New folder//Projects//filesUploadDir}")
-	private String uploadDir;
-
 	private CommonLoginRepository loginRepository;
 
 	private PasswordEncoder passwordEncoder;
