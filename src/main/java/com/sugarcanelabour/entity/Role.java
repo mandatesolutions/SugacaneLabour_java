@@ -19,13 +19,10 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-<<<<<<< HEAD
-public class Role {
-=======
+
 public class Role implements Serializable {
 
 	private static final long serialVersionUID = 1L;
->>>>>>> userA
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

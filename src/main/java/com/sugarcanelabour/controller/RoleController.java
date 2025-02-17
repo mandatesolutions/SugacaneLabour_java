@@ -13,21 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.sugarcanelabour.entity.Role;
 import com.sugarcanelabour.helper.ApiResponse;
-<<<<<<< HEAD
-
-=======
->>>>>>> userA
 import com.sugarcanelabour.service.RoleService;
 
 import io.swagger.v3.oas.annotations.Operation;
-
-<<<<<<< HEAD
-=======
-import jakarta.servlet.http.HttpServletRequest;
->>>>>>> userA
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,11 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RoleController {
 
 	private RoleService roleService;
-<<<<<<< HEAD
 
-=======
-	
->>>>>>> userA
 	public RoleController(RoleService roleService) {
 		this.roleService = roleService;
 	}
@@ -56,11 +42,6 @@ public class RoleController {
 	}
 
 	// get all roles
-
-<<<<<<< HEAD
-=======
-	
->>>>>>> userA
 	@Operation(summary = "Get All Roles API", description = "This API is used to retrieve all roles")
 	@GetMapping("/all")
 	public ResponseEntity<ApiResponse<List<Role>>> getAllRoles() {
@@ -68,7 +49,7 @@ public class RoleController {
 			log.info("***** Inside RoleController - getAllRoles *****");
 		}
 		ApiResponse<List<Role>> response = roleService.getAllRoles();
-		  return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// get role by id

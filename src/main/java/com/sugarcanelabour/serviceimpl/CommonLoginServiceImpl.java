@@ -1,13 +1,5 @@
 package com.sugarcanelabour.serviceimpl;
 
-<<<<<<< HEAD
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-=======
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
->>>>>>> userA
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,59 +60,6 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 	private DocumentRepository documentRepository;
 	private TalukaRepository talukaRepo;
 
-<<<<<<< HEAD
-        log.info("Login successful for role: {}", user.getRole());
-        return "Login successful for role: " + user.getRole();
-    }
-    
-    
-    //super-admin register
-    
-    @Override
-    @Transactional
-    public ResponseEntity<Object> registerSuperAdmin(SuperAdminRegistrationDto superAdminDto) {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            // Validate password
-            if (superAdminDto.getPassword() == null || superAdminDto.getPassword().isEmpty()) {
-                response.put("status", "failure");
-                response.put("message", "Password cannot be null or empty");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            // Encrypt the password
-            String encryptedPassword = passwordEncoder.encode(superAdminDto.getPassword());
-
-            // Retrieve or create the ADMIN role
-            Role adminRole = roleRepository.findByRoleName("ADMIN").orElseGet(() -> {
-                Role newRole = new Role();
-                newRole.setRoleName("ADMIN");
-                return roleRepository.save(newRole);
-            });
-
-            // Create the CommonLogin object for the super admin
-            CommonLogin adminLogin = new CommonLogin();
-            adminLogin.setEmail(superAdminDto.getEmail());
-            adminLogin.setPassword(encryptedPassword);
-            adminLogin.setRole(adminRole);
-
-            // Save the super admin login
-            CommonLogin savedAdmin = loginRepository.save(adminLogin);
-
-            // Prepare response
-            response.put("status", "success");
-            response.put("message", "Super Admin registered successfully");
-            response.put("data", savedAdmin);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            response.put("status", "failure");
-            response.put("message", "Super Admin registration failed: " + e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-=======
 	private SupervisorDetailsRepository supervisorDetailsRepository;
 
 	public CommonLoginServiceImpl(CommonLoginRepository loginRepository, PasswordEncoder passwordEncoder,
@@ -156,7 +95,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			resp.setMessage(CommonMessages.CL_EMAIL_NF);
 			return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
 		}
->>>>>>> userA
+
 
 		// Check if the user is active
 		if (UserStatus.IN_ACTIVE.equals(user.get().getStatus())) {

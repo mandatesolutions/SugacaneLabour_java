@@ -3,10 +3,6 @@ package com.sugarcanelabour.controller.SuperAdmin;
 import java.util.HashMap;
 import java.util.Map;
 
-<<<<<<< HEAD
-import org.springframework.beans.factory.annotation.Autowired;
-=======
->>>>>>> userA
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -33,31 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 public class SuperAdminController {
 
-<<<<<<< HEAD
-	@Autowired
-	private CommonLoginService commonLoginService;
-
-	@PostMapping("/super-admin/register")
-	public ResponseEntity<Object> registerSuperAdmin(@RequestBody SuperAdminRegistrationDto superAdminDto) {
-	    try {
-	        return commonLoginService.registerSuperAdmin(superAdminDto);
-	    } catch (Exception e) {
-	        Map<String, Object> response = new HashMap<>();
-	        response.put("status", "failure");
-	        response.put("message", "Super Admin registration failed: " + e.getMessage());
-	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	    }
-	}
-
-
-	  
-=======
 	private CommonLoginService commonLoginService;
 	private SuperAdminService adminService;
 
-	public SuperAdminController(CommonLoginService commonLoginService,SuperAdminService adminService) {
+	public SuperAdminController(CommonLoginService commonLoginService, SuperAdminService adminService) {
 		this.commonLoginService = commonLoginService;
-		this.adminService=adminService;
+		this.adminService = adminService;
 	}
 
 	@Operation(summary = "Register Super Admin API", description = "This API is used to register a super admin")
@@ -77,76 +54,68 @@ public class SuperAdminController {
 		response.put("status", "Hello");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@Operation(summary = "Get Admin Details API", description = "This API is used to get the details of an admin")
 	@GetMapping("/getAdminDetails/{userId}")
 	public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminDetails(@PathVariable Long userId) {
-	    log.info("***** Inside - SuperAdminController - getAdminDetails *****");
+		log.info("***** Inside - SuperAdminController - getAdminDetails *****");
 
-	    // Call the service method to fetch admin details
-	    ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getAdminDetails(userId);
+		// Call the service method to fetch admin details
+		ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getAdminDetails(userId);
 
-	    // Return the response from the service
-	    return response;
+		// Return the response from the service
+		return response;
 	}
 
 	@Operation(summary = "Get Supervisor Details API", description = "This API is used to get the details of a supervisor")
 	@GetMapping("/getSupervisorDetails/{userId}")
 	public ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorDetails(@PathVariable Long userId) {
-	    log.info("***** Inside - SuperAdminController - getSupervisorDetails *****");
+		log.info("***** Inside - SuperAdminController - getSupervisorDetails *****");
 
-	    // Call the service method to fetch supervisor details
-	    ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getSupervisorDetails(userId);
+		// Call the service method to fetch supervisor details
+		ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getSupervisorDetails(userId);
 
-	    // Return the response from the service
-	    return response;
+		// Return the response from the service
+		return response;
 	}
 
-	
-	  
-	  @Operation(summary = "Get Coworker Details API", description = "This API is used to get the details of a coworker")
-	  @GetMapping("/getCoworkerDetails/{commonLoginId}")
-	  public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(@PathVariable Long commonLoginId) {
-	      log.info("***** Inside - SuperAdminController - getCoworkerDetails *****");
-	      
-	      // Call the service method to fetch coworker details
-	      ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getCoworkerDetails(commonLoginId);
-	      
-	      // Return the response from the service
-	      return response;
-	  }
-	  
-	  
+	@Operation(summary = "Get Coworker Details API", description = "This API is used to get the details of a coworker")
+	@GetMapping("/getCoworkerDetails/{commonLoginId}")
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(@PathVariable Long commonLoginId) {
+		log.info("***** Inside - SuperAdminController - getCoworkerDetails *****");
 
+		// Call the service method to fetch coworker details
+		ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getCoworkerDetails(commonLoginId);
 
-	  @Operation(summary = "Get Labor Details API", description = "This API is used to get the details of a laborer")
-	  @GetMapping("/getLaborDetails/{commonLoginId}")
-	  public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(@PathVariable Long commonLoginId) {
-	      log.info("***** Inside - SuperAdminController - getLaborDetails *****");
+		// Return the response from the service
+		return response;
+	}
 
-	      // Calling the service layer to fetch labor details using the provided commonLoginId
-	      ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getLaborDetails(commonLoginId);
+	@Operation(summary = "Get Labor Details API", description = "This API is used to get the details of a laborer")
+	@GetMapping("/getLaborDetails/{commonLoginId}")
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getLaborDetails(@PathVariable Long commonLoginId) {
+		log.info("***** Inside - SuperAdminController - getLaborDetails *****");
 
-	      // Returning the response as it is from the service
-	      return response;
-	  }
->>>>>>> userA
+		// Calling the service layer to fetch labor details using the provided
+		// commonLoginId
+		ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.getLaborDetails(commonLoginId);
 
-	  //deactivate user
-	  
-	  @Operation(summary = "Deactivate User API", description = "This API is used to deactivate an admin, supervisor, or coworker.")
-	  @DeleteMapping("/deactivateUser/{userId}")
-	  public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(@PathVariable Long userId) {
-	      log.info("***** Inside - SuperAdminController - deactivateUser *****");
+		// Returning the response as it is from the service
+		return response;
+	}
 
-	      // Call the service method to deactivate user
-	      ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.deactivateUser(userId);
+	// deactivate user
 
-	      // Return the response from the service
-	      return response;
-	  }
-	  
+	@Operation(summary = "Deactivate User API", description = "This API is used to deactivate an admin, supervisor, or coworker.")
+	@DeleteMapping("/deactivateUser/{userId}")
+	public ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(@PathVariable Long userId) {
+		log.info("***** Inside - SuperAdminController - deactivateUser *****");
 
+		// Call the service method to deactivate user
+		ResponseEntity<ApiResponse<Map<String, Object>>> response = adminService.deactivateUser(userId);
 
+		// Return the response from the service
+		return response;
+	}
 
 }
