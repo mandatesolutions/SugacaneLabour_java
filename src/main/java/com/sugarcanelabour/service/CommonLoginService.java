@@ -24,7 +24,7 @@ public interface CommonLoginService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> registerSupervisor(RegistrationDto registrationDto);
 
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto);
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto, Long coWId);
 
 //	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
 
@@ -32,17 +32,16 @@ public interface CommonLoginService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deleteLaborDetails(Long commonLoginId);
 
-	
 //	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, MultipartFile profileImage);
-	
-	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, Long cowId);
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
 
 	ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails();
 
-	//ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId, RegistrationDto laborUpdateRequest);
-
+	// ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId,
+	// RegistrationDto laborUpdateRequest);
 
 	// CommonLogin registerSupervisor(RegistrationDto registrationDto);
 

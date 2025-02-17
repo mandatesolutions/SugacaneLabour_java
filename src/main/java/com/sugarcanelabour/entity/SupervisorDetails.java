@@ -18,6 +18,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -67,4 +69,14 @@ public class SupervisorDetails {
 	@JoinColumn(name = "talukaId")
 	private Taluka taluka;
 
+	@PrePersist
+	@PreUpdate
+	private void formatFields() {
+		if (gender != null) {
+			gender = gender.toUpperCase();
+		}
+		if (bloodGroup != null) {
+			bloodGroup = bloodGroup.toUpperCase();
+		}
+	}
 }

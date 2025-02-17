@@ -61,14 +61,12 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	private SupervisorDetailsRepository supervisorDetailsRepository;
 
-
-	public CommonLoginServiceImpl(CommonLoginRepository loginRepository,
-			PasswordEncoder passwordEncoder, RoleRepository roleRepository, JwtHelper jwtHelper,
-			RedisTemplate<String, Object> redisTemplate, CommonFunctions commonFunctions,
-			DocumentRepository documentRepository, TalukaRepository talukaRepo,
+	public CommonLoginServiceImpl(CommonLoginRepository loginRepository, PasswordEncoder passwordEncoder,
+			RoleRepository roleRepository, JwtHelper jwtHelper, RedisTemplate<String, Object> redisTemplate,
+			CommonFunctions commonFunctions, DocumentRepository documentRepository, TalukaRepository talukaRepo,
 			SupervisorDetailsRepository supervisorDetailsRepository) {
 		super();
-		
+
 		this.loginRepository = loginRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.roleRepository = roleRepository;
@@ -313,7 +311,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			supervisorDetails.setGender(registrationDto.getGender());
 			supervisorDetails.setBloodGroup(registrationDto.getBloodGroup());
 			supervisorDetails.setAddress(registrationDto.getAddress());
-
+			supervisorDetails.setAge(registrationDto.getAge());
 			supervisorDetails.setTaluka(talukaDetails);
 			supervisorDetails.setCommonLogin(commonLogin); // Link CommonLogin to SupervisorDetails
 			supervisorDetails.setRegisteredBy(registeredByUser); // Store who registered this supervisor
@@ -347,7 +345,8 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	@Override
 	@Transactional
-	public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoWorker(RegistrationDto registrationDto,
+			Long coWId) {
 		ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 		Map<String, Object> response = new HashMap<>();
 		Taluka talukaDetails = talukaRepo.findById(registrationDto.getTalukaId())
@@ -370,6 +369,8 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 				return ResponseEntity.badRequest().body(resp);
 			}
 
+			Optional<CommonLogin> data = loginRepository.findById(coWId);
+
 			// Encrypt the password
 			String encryptedPassword = passwordEncoder.encode(registrationDto.getPassword());
 
@@ -389,10 +390,10 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			coworkerDetails.setGender(registrationDto.getGender());
 			coworkerDetails.setBloodGroup(registrationDto.getBloodGroup());
 			coworkerDetails.setAddress(registrationDto.getAddress());
-
+			coworkerDetails.setAge(registrationDto.getAge());
 			coworkerDetails.setTaluka(talukaDetails);
 			coworkerDetails.setCommonLogin(commonLogin);
-
+			coworkerDetails.setRegisteredBy(data.get());
 			supervisorDetailsRepository.save(coworkerDetails);
 
 			// Prepare response
@@ -525,7 +526,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	@Override
 	@Transactional
-	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto) {
+	public ResponseEntity<ApiResponse<Map<String, Object>>> registerLabor(RegistrationDto laborDto, Long cowId) {
 		ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
 		Map<String, Object> response = new HashMap<>();
 		Taluka talukaDetails = talukaRepo.findById(laborDto.getTalukaId()).orElseThrow(
@@ -560,6 +561,8 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 			loginRepository.save(labor);
 
+			Optional<CommonLogin> cl = loginRepository.findById(cowId);
+
 			// Reuse SupervisorDetails entity for Labor
 			SupervisorDetails laborDetails = new SupervisorDetails(); // Reusing SupervisorDetails
 			laborDetails.setFirstName(laborDto.getFirstName());
@@ -572,10 +575,11 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 			laborDetails.setFamilyMembers(laborDto.getFamilyMembers());
 			laborDetails.setMedicalHistory(laborDto.getMedicalHistory());
 			laborDetails.setTaluka(talukaDetails);
-
+			laborDetails.setRegisteredBy(cl.get());
 			// Handle profile image if present
 			if (laborDto.getProfileImage() != null && !laborDto.getProfileImage().isEmpty()) {
-				String profileImageUrl = commonFunctions.saveLaborImage(laborDto.getProfileImage()); // Pass the image here
+				String profileImageUrl = commonFunctions.saveLaborImage(laborDto.getProfileImage()); // Pass the image
+																										// here
 				laborDetails.setProfileImage(profileImageUrl); // Set profile image URL in labor details
 			}
 

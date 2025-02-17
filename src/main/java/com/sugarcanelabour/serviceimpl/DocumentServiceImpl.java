@@ -24,92 +24,103 @@ import com.sugarcanelabour.service.DocumentService;
 import io.jsonwebtoken.io.IOException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Slf4j
-public class DocumentServiceImpl implements DocumentService{
-	
-	 @Value("${UPLOAD_DOCUMENTS}")
-	    private String uploadDir;
+public class DocumentServiceImpl implements DocumentService {
 
-	    private final DocumentRepository documentRepository;
-	    private final CommonLoginRepository commonLoginRepository;
+	@Value("${UPLOAD_DOCUMENTS}")
+	private String uploadDir;
 
-	    public DocumentServiceImpl(DocumentRepository documentRepository, CommonLoginRepository commonLoginRepository) {
-	        this.documentRepository = documentRepository;
-	        this.commonLoginRepository = commonLoginRepository;
-	    }
+	@Value("${DOCUMENT_BASE_URL}")
+	private String POST_BASE_PATH;
 
-	    @Override
-	    @Transactional
-	    public ResponseEntity<ApiResponse<String>> handleFileUploadWithMetadata(UploadDocumentDto uploadDocumentDto, Long commonLoginId) {
-	        if (uploadDocumentDto.getFile() == null || uploadDocumentDto.getFile().isEmpty()) {
-	            return ResponseEntity.badRequest().body(new ApiResponse<>("Error", "No file uploaded", null));
-	        }
+	@Value("${https.backend.server.url}")
+	private String UPLOAD_PATH_URL;
 
-	        try {
-	            String savedFilePath = uploadFile(uploadDocumentDto.getFile());
-	            saveFileMetadata(uploadDocumentDto.getDocumentTypes(), savedFilePath, commonLoginId);
-	            return ResponseEntity.ok(new ApiResponse<>("Success", "File uploaded successfully: " + savedFilePath, null));
-	        } catch (IOException e) {
-	            log.error("File upload failed", e);
-	            return ResponseEntity.internalServerError().body(new ApiResponse<>("Error", "File upload failed", null));
-	        }
-	    }
+	private final DocumentRepository documentRepository;
+	private final CommonLoginRepository commonLoginRepository;
 
-	    private String uploadFile(MultipartFile file) throws IOException {
-	        String fileName = file.getOriginalFilename();
-	        if (fileName == null) {
-	            throw new IOException("Invalid file name");
-	        }
+	public DocumentServiceImpl(DocumentRepository documentRepository, CommonLoginRepository commonLoginRepository) {
+		this.documentRepository = documentRepository;
+		this.commonLoginRepository = commonLoginRepository;
+	}
 
-	        // Define directory structure for storing the file
-	        Path filesUploadDir = Paths.get(uploadDir);
-	        try {
-				Files.createDirectories(filesUploadDir);
-			} catch (java.io.IOException e) {
-				e.printStackTrace();
-			}
+	@Override
+	@Transactional
+	public ResponseEntity<ApiResponse<String>> handleFileUploadWithMetadata(UploadDocumentDto uploadDocumentDto,
+			Long commonLoginId) {
+		if (uploadDocumentDto.getFile() == null || uploadDocumentDto.getFile().isEmpty()) {
+			return ResponseEntity.badRequest().body(new ApiResponse<>("Error", "No file uploaded", null));
+		}
 
-	        Path filePath = filesUploadDir.resolve(fileName);
+		try {
+			String savedFilePath = uploadFile(uploadDocumentDto.getFile());
+			saveFileMetadata(uploadDocumentDto.getDocumentTypes(), savedFilePath, commonLoginId);
+			return ResponseEntity
+					.ok(new ApiResponse<>("Success", "File uploaded successfully: " + savedFilePath, null));
+		} catch (IOException e) {
+			log.error("File upload failed", e);
+			return ResponseEntity.internalServerError().body(new ApiResponse<>("Error", "File upload failed", null));
+		}
+	}
 
-	        // Save the file to the filesystem
-	        try {
-				file.transferTo(filePath.toFile());
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			} catch (java.io.IOException e) {
-				e.printStackTrace();
-			}
+	private String uploadFile(MultipartFile file) throws IOException {
+		String fileName = file.getOriginalFilename();
+		if (fileName == null) {
+			throw new IOException("Invalid file name");
+		}
 
-	        log.info("Document uploaded: {}", fileName);
-	        return filePath.toString(); // Return the full file path
-	    }
+		// Define directory structure for storing the file
+		Path filesUploadDir = Paths.get(uploadDir);
+		try {
+			Files.createDirectories(filesUploadDir);
+		} catch (java.io.IOException e) {
+			e.printStackTrace();
+		}
 
-	    private void saveFileMetadata(List<DocumentType> documentTypes, String filePath, Long commonLoginId) {
-	        CommonLogin commonLogin = commonLoginRepository.findById(commonLoginId)
-	                .orElseThrow(() -> new RuntimeException("CommonLogin not found"));
+		Path filePath = filesUploadDir.resolve(fileName);
 
-	        for (DocumentType documentType : documentTypes) {
-	            Document document = new Document();
-	            document.setDocumentType(documentType);
-	            document.setFilePath(filePath);
-	            document.setCommonLogin(commonLogin);
+		// Save the file to the filesystem
+		try {
+			file.transferTo(filePath.toFile());
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (java.io.IOException e) {
+			e.printStackTrace();
+		}
 
-	            // Generate the document link (assuming the file is accessible at some URL)
-	            String documentLink = generateDocumentLink(filePath);
-	            document.setDocumentLink(documentLink);
+		log.info("Document uploaded: {}", fileName);
+		return filePath.toString(); // Return the full file path
+	}
 
-	            documentRepository.save(document);
-	            log.info("Document metadata saved in DB: {}", filePath);
-	        }
-	    }
+	private void saveFileMetadata(List<DocumentType> documentTypes, String filePath, Long commonLoginId) {
+		CommonLogin commonLogin = commonLoginRepository.findById(commonLoginId)
+				.orElseThrow(() -> new RuntimeException("CommonLogin not found"));
 
-	    // Method to generate the document link (you can adjust this as per your requirements)
-	    private String generateDocumentLink(String filePath) {
-	        // Assuming the document is accessible via a URL based on the file path
-	        // Replace this with your actual URL logic if needed (e.g., using a domain or cloud storage link)
-	        String documentLink = "http://documents.com/files/" + new File(filePath).getName();
-	        return documentLink;
-	    }
-	    
+		for (DocumentType documentType : documentTypes) {
+			Document document = new Document();
+			document.setDocumentType(documentType);
+			document.setFilePath(filePath);
+			document.setCommonLogin(commonLogin);
+
+			// Generate the document link (assuming the file is accessible at some URL)
+			String documentLink = generateDocumentLink(filePath);
+			document.setDocumentLink(documentLink);
+
+			documentRepository.save(document);
+			log.info("Document metadata saved in DB: {}", filePath);
+		}
+	}
+
+	// Method to generate the document link (you can adjust this as per your
+	// requirements)
+	private String generateDocumentLink(String filePath) {
+		// Assuming the document is accessible via a URL based on the file path
+		// Replace this with your actual URL logic if needed (e.g., using a domain or
+		// cloud storage link)
+		String documentLink = UPLOAD_PATH_URL + POST_BASE_PATH + new File(filePath).getName();
+		return documentLink;
+	}
+
 }

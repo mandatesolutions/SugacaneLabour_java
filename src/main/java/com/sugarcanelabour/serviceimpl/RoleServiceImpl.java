@@ -31,6 +31,7 @@ public class RoleServiceImpl implements RoleService {
 	}
 
 	// add role
+	@CacheEvict(value = "roles", allEntries = true)
 	@Transactional
 	@Override
 	public ResponseEntity<ApiResponse<String>> addRole(Role role) {

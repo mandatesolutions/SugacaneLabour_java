@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.helper.ApiResponse;
+import com.sugarcanelabour.helper.CommonFunctions;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,14 +29,23 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/sclm/supervisor")
 public class SupervisorController {
 	
-	@Autowired
-	private CommonLoginService commonLoginService;
 	
-	  @Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by the supervisor")
+	private CommonLoginService commonLoginService;
+	private CommonFunctions commonFunctions;
+	
+	
+	  public SupervisorController(CommonLoginService commonLoginService, CommonFunctions commonFunctions) {
+		super();
+		this.commonLoginService = commonLoginService;
+		this.commonFunctions = commonFunctions;
+	}
+
+	@Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by the supervisor")
 	    @PostMapping("/register-coworker")
 	    public ResponseEntity<ApiResponse<Map<String, Object>>> registerCoworker(
-	            @Valid @RequestBody RegistrationDto registrationDto) {
-	        return commonLoginService.registerCoWorker(registrationDto);
+	           HttpServletRequest request, @Valid @RequestBody RegistrationDto registrationDto) {
+		  Long supId = commonFunctions.getUserIdFromRequest(request);
+	        return commonLoginService.registerCoWorker(registrationDto,supId);
 	    }
 
 	  @GetMapping("/tests")
