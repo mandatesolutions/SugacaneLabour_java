@@ -172,7 +172,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		}
 
 		// For Labor role, add UUID and other fields from SupervisorDetails
-		if (role.equals("ROLE_LABOR")) {
+		if (role.equals("ROLE_LABOUR")) {
 			// Ensure UUID is added only for Labor
 			Optional<SupervisorDetails> supervisorDetailsOptional = supervisorDetailsRepository
 					.findByCommonLogin(user.get());
@@ -695,7 +695,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 		try {
 			// Fetch all laborers from the database
-			List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+			List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOUR");
 
 			if (labors.isEmpty()) {
 				response.setStatus("FAILED");
@@ -775,7 +775,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	    try {
 	        // Define the expected sequence
-	        List<String> roleOrder = Arrays.asList("ROLE_ADMIN", "ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOR");
+	        List<String> roleOrder = Arrays.asList("ROLE_ADMIN", "ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOUR");
 
 	        // Initialize a map to store the user count for each role
 	        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
@@ -893,7 +893,7 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 		    try {
 		        // Define the expected sequence
-		        List<String> roleOrder = Arrays.asList("ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOR");
+		        List<String> roleOrder = Arrays.asList("ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOUR");
 
 		        // Initialize a map to store the user count for each role
 		        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
@@ -942,6 +942,9 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 		            // Prepare the map to hold the current entry
 		            Map<String, Object> data = new HashMap<>();
 		            data.put("role", role);
+		   
+		            
+		            
 		            data.put("registrationCount", registrationCount);
 
 		            // Add this data to the map grouped by month
@@ -995,3 +998,5 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 	}
 }
+
+

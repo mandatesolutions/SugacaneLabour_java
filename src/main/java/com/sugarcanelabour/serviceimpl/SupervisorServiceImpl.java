@@ -52,7 +52,7 @@ public class SupervisorServiceImpl implements SupervisorService{
 
 		    try {
 		        // Define the expected sequence
-		        List<String> roleOrder = Arrays.asList("ROLE_COWORKER", "ROLE_LABOR");
+		        List<String> roleOrder = Arrays.asList("ROLE_COWORKER", "ROLE_LABOUR");
 
 		        // Initialize a map to store the user count for each role
 		        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
@@ -191,7 +191,9 @@ public class SupervisorServiceImpl implements SupervisorService{
 	                    coworkerData.put("bloodGroup", coworkerDetails.getBloodGroup());
 	                    coworkerData.put("address", coworkerDetails.getAddress());
 	                    coworkerData.put("districtId", coworkerDetails.getTaluka().getDistrict().getDistrictId());
+	                    coworkerData.put("DistrictName", coworkerDetails.getTaluka().getDistrict().getDistrictName());
 	                    coworkerData.put("talukaId", coworkerDetails.getTaluka().getTalukaId());
+	                    coworkerData.put("TalukaName", coworkerDetails.getTaluka().getTalukaName());
 
 	                    coworkerList.add(coworkerData);
 	                }
@@ -214,7 +216,6 @@ public class SupervisorServiceImpl implements SupervisorService{
 	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	        }
 	    }
-	 
 	 @Override
 	 @Transactional
 	 public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() {
@@ -226,7 +227,7 @@ public class SupervisorServiceImpl implements SupervisorService{
 
 	     try {
 	         // Fetch all CommonLogin records with role "ROLE_LABOR"
-	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOUR");
 
 	         if (labors.isEmpty()) {
 	             response.setStatus(CommonMessages.FAILED);
@@ -253,7 +254,9 @@ public class SupervisorServiceImpl implements SupervisorService{
 	                 laborData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                 laborData.put("address", supervisorDetails.getAddress());
 	                 laborData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                 laborData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                 laborData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                 laborData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 	                 laborData.put("age", supervisorDetails.getAge());
 	                 laborData.put("familyMembers", supervisorDetails.getFamilyMembers());
 	                 laborData.put("medicalHistory", supervisorDetails.getMedicalHistory());
@@ -299,5 +302,4 @@ public class SupervisorServiceImpl implements SupervisorService{
 	         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	     }
 	 }
-
 }

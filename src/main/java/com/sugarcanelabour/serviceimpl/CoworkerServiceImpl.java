@@ -53,7 +53,7 @@ public class CoworkerServiceImpl implements CoworkerService{
 
 		    try {
 		        // Define the expected sequence
-		        List<String> roleOrder = Arrays.asList("ROLE_LABOR");
+		        List<String> roleOrder = Arrays.asList("ROLE_LABOUR");
 
 		        // Initialize a map to store the user count for each role
 		        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
@@ -155,7 +155,7 @@ public class CoworkerServiceImpl implements CoworkerService{
 
 	}
 	
-	@Override
+	 @Override
 	 @Transactional
 	 public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() {
 	     log.info("Fetching all labors...");
@@ -166,7 +166,7 @@ public class CoworkerServiceImpl implements CoworkerService{
 
 	     try {
 	         // Fetch all CommonLogin records with role "ROLE_LABOR"
-	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOUR");
 
 	         if (labors.isEmpty()) {
 	             response.setStatus(CommonMessages.FAILED);
@@ -193,7 +193,9 @@ public class CoworkerServiceImpl implements CoworkerService{
 	                 laborData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                 laborData.put("address", supervisorDetails.getAddress());
 	                 laborData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                 laborData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                 laborData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                 laborData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 	                 laborData.put("age", supervisorDetails.getAge());
 	                 laborData.put("familyMembers", supervisorDetails.getFamilyMembers());
 	                 laborData.put("medicalHistory", supervisorDetails.getMedicalHistory());
@@ -239,6 +241,5 @@ public class CoworkerServiceImpl implements CoworkerService{
 	         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	     }
 	 }
-
 
 }

@@ -36,7 +36,7 @@ public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long> 
 	@Query("SELECT COALESCE(MONTH(cl.createdAt), 1), r.roleName, COUNT(DISTINCT cl.userId) " +
 		       "FROM CommonLogin cl " +
 		       "JOIN Role r ON cl.role.id = r.id " +
-		       "WHERE r.roleName != 'ROLE_SUP-ADMIN' " +  // Exclude ROLE_SUP-ADMIN
+		       "WHERE r.roleName != 'ROLE_SUP-ADMIN' " +  
 		       "GROUP BY MONTH(cl.createdAt), r.roleName " +
 		       "ORDER BY MONTH(cl.createdAt) DESC")
 		List<Object[]> findRegistrationCountByMonthAndRole();
@@ -49,7 +49,7 @@ public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long> 
 	           "FROM CommonLogin cl " +
 	           "JOIN SupervisorDetails sd ON cl = sd.commonLogin " +
 	           "JOIN Role r ON cl.role.id = r.id " +
-	           "WHERE r.roleName = 'ROLE_LABOR' " +
+	           "WHERE r.roleName = 'ROLE_LABOUR' " +
 	           "ORDER BY cl.createdAt DESC")
 	    Page<LaboursDto> findLatestLabors(Pageable pageable);
 

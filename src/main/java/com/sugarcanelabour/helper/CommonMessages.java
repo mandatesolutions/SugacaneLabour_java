@@ -58,10 +58,12 @@ public class CommonMessages {
 	public static final String C_NF = "No Coworkers found.";
 	
 	/*  Supervisors   */
+	
 	public static final String S_NOT_FOUND = "No Supervisors found.";
 	
 	
 	/*   Admins  */
+	
 	public static final String A_ERRORFETCH = "Error fetching Admins ";
 	public static final String A_RETRIVED = "Admins retrieved successfully.";
 	public static final String ERROR_DU = "Error deactivating user " ;

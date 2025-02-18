@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.sugarcanelabour.entity.CommonLogin;
+import com.sugarcanelabour.entity.District;
 import com.sugarcanelabour.entity.Document;
 import com.sugarcanelabour.entity.SupervisorDetails;
+import com.sugarcanelabour.entity.Taluka;
 import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.helper.CommonMessages;
 import com.sugarcanelabour.helper.Enums.UserStatus;
@@ -79,7 +81,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 			data.put("firstName", supervisorDetails.getFirstName());
 			data.put("lastName", supervisorDetails.getLastName());
 			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 
 			// Success response
 			response.setStatus("SUCCESS");
@@ -141,7 +145,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 			data.put("bloodGroup", supervisorDetails.getBloodGroup());
 			data.put("address", supervisorDetails.getAddress());
 			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 
 			// Success response
 			response.setStatus("SUCCESS");
@@ -199,7 +205,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 			data.put("bloodGroup", supervisorDetails.getBloodGroup());
 			data.put("address", supervisorDetails.getAddress());
 			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 
 			// Success response
 			response.setStatus("SUCCESS");
@@ -228,7 +236,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 					.orElseThrow(() -> new RuntimeException(CommonMessages.L_NF));
 
 			// Check if the role is LABOR
-			if (!"ROLE_LABOR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
+			if (!"ROLE_LABOUR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
 				response.setStatus("FAILED");
 				response.setMessage("User is not a laborer.");
 				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
@@ -257,7 +265,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 			data.put("bloodGroup", supervisorDetails.getBloodGroup());
 			data.put("address", supervisorDetails.getAddress());
 			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 			data.put("age", supervisorDetails.getAge());
 			data.put("familyMembers", supervisorDetails.getFamilyMembers());
 			data.put("medicalHistory", supervisorDetails.getMedicalHistory());
@@ -339,47 +349,80 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 		}
 	}
 
-	 @Override
-	    public ResponseEntity<ApiResponse<Map<String, Object>>> getAllAdminDetails() {
-	        log.info("Fetching all Admin details...");
-	        ApiResponse<Map<String, Object>> response = new ApiResponse<>();
-	        Map<String, Object> responseData = new HashMap<>();
-	        List<Map<String, Object>> adminList = new ArrayList<>();
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getAllAdminDetails() {
+	    log.info("Fetching all Admin details...");
+	    ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+	    Map<String, Object> responseData = new HashMap<>();
+	    List<Map<String, Object>> adminList = new ArrayList<>();
 
-	        try {
-	            List<CommonLogin> admins = loginRepository.findByRole_RoleName("ROLE_ADMIN");
+	    try {
+	        // Fetching admins
+	        List<CommonLogin> admins = loginRepository.findByRole_RoleName("ROLE_ADMIN");
 
-	            if (admins.isEmpty()) {
-	                response.setStatus("FAILED");
-	                response.setMessage("No Admins found.");
-	                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-	            }
-
-	            for (CommonLogin admin : admins) {
-	                Map<String, Object> adminData = new HashMap<>();
-	                adminData.put("userId", admin.getUserId());
-	                adminData.put("email", admin.getEmail());
-	                adminData.put("role", admin.getRole().getRoleName());
-
-	                adminList.add(adminData);
-	            }
-
-	            responseData.put("count", adminList.size());
-	            responseData.put("admins", adminList);
-
-	            response.setStatus(CommonMessages.SUCCESS);
-	            response.setMessage(CommonMessages.A_RETRIVED);
-	            response.setData(responseData);
-
-	            return new ResponseEntity<>(response, HttpStatus.OK);
-
-	        } catch (Exception e) {
-	            log.error("Error fetching Admins: {}", e.getMessage());
-	            response.setStatus(CommonMessages.FAILED);
-	            response.setMessage(CommonMessages.A_ERRORFETCH);
-	            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	        if (admins.isEmpty()) {
+	            response.setStatus("FAILED");
+	            response.setMessage("No Admins found.");
+	            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	        }
+
+	        // Iterating through each admin and fetching related details
+	        for (CommonLogin admin : admins) {
+	            Map<String, Object> adminData = new HashMap<>();
+	            adminData.put("userId", admin.getUserId());
+	            adminData.put("email", admin.getEmail());
+	            adminData.put("role", admin.getRole().getRoleName());
+
+	            // Fetch the SupervisorDetails for the admin to get Taluka and District details
+	            Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository.findByCommonLogin(admin);
+
+	            if (supervisorDetailsOpt.isPresent()) {
+	                SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+	                Taluka taluka = supervisorDetails.getTaluka();
+
+	                // Check if Taluka is not null before accessing District
+	                if (taluka != null) {
+	                    District district = taluka.getDistrict();
+
+	                    // Add district and taluka information to the admin response
+	                    adminData.put("districtId", district != null ? district.getDistrictId() : null);
+	                    adminData.put("districtName", district != null ? district.getDistrictName() : null);
+	                    adminData.put("talukaId", taluka.getTalukaId());
+	                    adminData.put("talukaName", taluka.getTalukaName());
+	                } else {
+	                    // If taluka is null, set both district and taluka values to null
+	                    adminData.put("districtId", null);
+	                    adminData.put("districtName", null);
+	                    adminData.put("talukaId", null);
+	                    adminData.put("talukaName", null);
+	                }
+	            } else {
+	                // If no supervisor details exist for this admin, you can add null values for district and taluka
+	                adminData.put("districtId", null);
+	                adminData.put("districtName", null);
+	                adminData.put("talukaId", null);
+	                adminData.put("talukaName", null);
+	            }
+
+	            adminList.add(adminData);
+	        }
+
+	        responseData.put("count", adminList.size());
+	        responseData.put("admins", adminList);
+
+	        response.setStatus(CommonMessages.SUCCESS);
+	        response.setMessage(CommonMessages.A_RETRIVED);
+	        response.setData(responseData);
+
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+
+	    } catch (Exception e) {
+	        log.error("Error fetching Admins: {}", e.getMessage());
+	        response.setStatus(CommonMessages.FAILED);
+	        response.setMessage("Error fetching Admins: " + e.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
+	}
 
 	 @Override
 	    public ResponseEntity<ApiResponse<Map<String, Object>>> getAllSupervisors() {
@@ -414,7 +457,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 	                    supervisorData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                    supervisorData.put("address", supervisorDetails.getAddress());
 	                    supervisorData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                    supervisorData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                    supervisorData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                    supervisorData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 
 	                    supervisorList.add(supervisorData);
 	                }
@@ -474,7 +519,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 	                    coworkerData.put("bloodGroup", coworkerDetails.getBloodGroup());
 	                    coworkerData.put("address", coworkerDetails.getAddress());
 	                    coworkerData.put("districtId", coworkerDetails.getTaluka().getDistrict().getDistrictId());
+	                    coworkerData.put("DistrictName", coworkerDetails.getTaluka().getDistrict().getDistrictName());
 	                    coworkerData.put("talukaId", coworkerDetails.getTaluka().getTalukaId());
+	                    coworkerData.put("TalukaName", coworkerDetails.getTaluka().getTalukaName());
 
 	                    coworkerList.add(coworkerData);
 	                }
@@ -509,7 +556,7 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 
 	     try {
 	         // Fetch all CommonLogin records with role "ROLE_LABOR"
-	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOUR");
 
 	         if (labors.isEmpty()) {
 	             response.setStatus(CommonMessages.FAILED);
@@ -536,7 +583,9 @@ public class SuperAdminServiceImpl implements SuperAdminService {
 	                 laborData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                 laborData.put("address", supervisorDetails.getAddress());
 	                 laborData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                 laborData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                 laborData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                 laborData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 	                 laborData.put("age", supervisorDetails.getAge());
 	                 laborData.put("familyMembers", supervisorDetails.getFamilyMembers());
 	                 laborData.put("medicalHistory", supervisorDetails.getMedicalHistory());

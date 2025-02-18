@@ -71,7 +71,9 @@ public class AdminServiceImpl implements AdminService{
 	                    supervisorData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                    supervisorData.put("address", supervisorDetails.getAddress());
 	                    supervisorData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                    supervisorData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                    supervisorData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                    supervisorData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 
 	                    supervisorList.add(supervisorData);
 	                }
@@ -131,7 +133,9 @@ public class AdminServiceImpl implements AdminService{
 	                    coworkerData.put("bloodGroup", coworkerDetails.getBloodGroup());
 	                    coworkerData.put("address", coworkerDetails.getAddress());
 	                    coworkerData.put("districtId", coworkerDetails.getTaluka().getDistrict().getDistrictId());
+	                    coworkerData.put("DistrctName", coworkerDetails.getTaluka().getDistrict().getDistrictName());
 	                    coworkerData.put("talukaId", coworkerDetails.getTaluka().getTalukaId());
+	                    coworkerData.put("TalukaName", coworkerDetails.getTaluka().getTalukaName());
 
 	                    coworkerList.add(coworkerData);
 	                }
@@ -166,7 +170,7 @@ public class AdminServiceImpl implements AdminService{
 
 	     try {
 	         // Fetch all CommonLogin records with role "ROLE_LABOR"
-	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOR");
+	         List<CommonLogin> labors = loginRepository.findByRole_RoleName("ROLE_LABOUR");
 
 	         if (labors.isEmpty()) {
 	             response.setStatus(CommonMessages.FAILED);
@@ -193,7 +197,9 @@ public class AdminServiceImpl implements AdminService{
 	                 laborData.put("bloodGroup", supervisorDetails.getBloodGroup());
 	                 laborData.put("address", supervisorDetails.getAddress());
 	                 laborData.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+	                 laborData.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
 	                 laborData.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+	                 laborData.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
 	                 laborData.put("age", supervisorDetails.getAge());
 	                 laborData.put("familyMembers", supervisorDetails.getFamilyMembers());
 	                 laborData.put("medicalHistory", supervisorDetails.getMedicalHistory());
@@ -239,6 +245,5 @@ public class AdminServiceImpl implements AdminService{
 	         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	     }
 	 }
-
 
 }
