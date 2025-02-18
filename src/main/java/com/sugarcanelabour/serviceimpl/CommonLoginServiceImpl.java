@@ -4,14 +4,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Month;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +39,7 @@ import com.sugarcanelabour.helper.CommonFunctions;
 import com.sugarcanelabour.helper.CommonMessages;
 import com.sugarcanelabour.helper.Enums.UserStatus;
 import com.sugarcanelabour.helper.JwtHelper;
+import com.sugarcanelabour.model.LaboursDto;
 import com.sugarcanelabour.model.LoginRequest;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
@@ -738,23 +746,252 @@ public class CommonLoginServiceImpl implements CommonLoginService {
 
 					laborData.put("documents", documentDetails);
 				} else {
-					laborData.put("documents", "No documents uploaded");
+					laborData.put(CommonMessages.FAILED,CommonMessages.N_D_U);
 				}
 
 				laborList.add(laborData);
 			}
 
-			response.setStatus("SUCCESS");
-			response.setMessage("Labor details fetched successfully.");
+			response.setStatus(CommonMessages.SUCCESS);
+			response.setMessage(CommonMessages.L_S);
 			response.setData(laborList);
 
 			return new ResponseEntity<>(response, HttpStatus.OK);
 
 		} catch (Exception e) {
-			response.setStatus("FAILED");
-			response.setMessage("Error fetching labor details: " + e.getMessage());
+			response.setStatus(CommonMessages.FAILED);
+			response.setMessage(CommonMessages.L_DS);
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	//FOR SUPER-ADMINS
+	//count of super-admins 
+	
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getUserCountByAllRoles() {
+	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+	    Map<String, Object> response = new LinkedHashMap<>(); // Ensure order
+
+	    try {
+	        // Define the expected sequence
+	        List<String> roleOrder = Arrays.asList("ROLE_ADMIN", "ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOR");
+
+	        // Initialize a map to store the user count for each role
+	        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
+
+	        // Populate counts in a fixed sequence
+	        for (String roleName : roleOrder) {
+	            Long count = loginRepository.countByRole_RoleName(roleName);
+	            roleUserCountMap.put(roleName, count != null ? count : 0); // Avoid null values
+	        }
+
+	        // Add the role-user count map to the response
+	        response.put("roleUserCount", roleUserCountMap);
+
+	        resp.setStatus(CommonMessages.SUCCESS);
+	        resp.setMessage("Successfully fetched user count for all roles.");
+	        resp.setData(response);
+
+	        return ResponseEntity.ok(resp);
+	    } catch (Exception e) {
+	        resp.setStatus(CommonMessages.FAILED);
+	        resp.setMessage("Error fetching user count: " + e.getMessage());
+	        return ResponseEntity.internalServerError().body(resp);
+	    }
+	}
+
+
+	
+	
+	//registration count by month 
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getRegistrationCountByMonth() {
+	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+	    Map<String, Object> response = new HashMap<>();
+
+	    try {
+	        List<Object[]> result = loginRepository.findRegistrationCountByMonthAndRole();
+
+	        // Initialize a map to store the grouped results
+	        Map<String, List<Map<String, Object>>> groupedByMonth = new LinkedHashMap<>();
+
+	        // Process the result list to organize the data
+	        for (Object[] row : result) {
+	            Integer month = (Integer) row[0];  // Get the month
+	            String role = (String) row[1];     // Get the role name
+	            Long registrationCount = (Long) row[2];  // Get the registration count
+
+	            // Format month as string (e.g., "January", "February")
+	            String monthString = Month.of(month).name();
+
+	            // Prepare the map to hold the current entry
+	            Map<String, Object> data = new HashMap<>();
+	            data.put("role", role);
+	            data.put("registrationCount", registrationCount);
+
+	            // Add this data to the map grouped by month
+	            groupedByMonth.computeIfAbsent(monthString, k -> new ArrayList<>()).add(data);
+	        }
+
+	        // Put the grouped results into the response
+	        response.put("monthlyRegistrations", groupedByMonth);
+	        resp.setStatus(CommonMessages.SUCCESS);
+	        resp.setMessage("Registration count by month retrieved successfully.");
+	        resp.setData(response);
+
+	        return ResponseEntity.ok(resp);
+	    } catch (Exception e) {
+	        resp.setStatus(CommonMessages.FAILED);
+	        resp.setMessage("Error fetching registration count by month: " + e.getMessage());
+	        return ResponseEntity.internalServerError().body(resp);
+	    }
+	}
+
+
+	
+	//latest top 10 labors
+	
+	@Override
+    public ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLabors() {
+        ApiResponse<List<LaboursDto>> resp = new ApiResponse<>();
+        
+        try {
+            // Define Pageable object for pagination (10 latest labors sorted by createdAt DESC)
+            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdAt")));
+            
+            // Fetch the latest labors using the repository
+            Page<LaboursDto> laborPage = loginRepository.findLatestLabors(pageable);
+
+            // Check if there are no labors found
+            if (!laborPage.hasContent()) {
+                resp.setStatus(CommonMessages.FAILED);
+                resp.setMessage(CommonMessages.L_error);
+                return ResponseEntity.ok(resp);
+            }
+
+            // Set success status and the list of labors
+            resp.setStatus(CommonMessages.SUCCESS);
+            resp.setMessage(CommonMessages.L_success);
+            resp.setData(laborPage.getContent()); // Extract list of labors
+
+            return ResponseEntity.ok(resp);
+        } catch (Exception e) {
+            // Handle any exceptions and return an error response
+            resp.setStatus(CommonMessages.FAILED);
+            resp.setMessage(CommonMessages.L_Ef);
+            return ResponseEntity.internalServerError().body(resp);
+        }
+    }
+
+							// FOR ADMINS
+	
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getCountByAllRoles() {
+		  ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+		    Map<String, Object> response = new LinkedHashMap<>(); // Ensure order
+
+		    try {
+		        // Define the expected sequence
+		        List<String> roleOrder = Arrays.asList("ROLE_SUPERVISOR", "ROLE_COWORKER", "ROLE_LABOR");
+
+		        // Initialize a map to store the user count for each role
+		        Map<String, Long> roleUserCountMap = new LinkedHashMap<>();
+
+		        // Populate counts in a fixed sequence
+		        for (String roleName : roleOrder) {
+		            Long count = loginRepository.countByRole_RoleName(roleName);
+		            roleUserCountMap.put(roleName, count != null ? count : 0); // Avoid null values
+		        }
+
+		        // Add the role-user count map to the response
+		        response.put("roleUserCount", roleUserCountMap);
+
+		        resp.setStatus(CommonMessages.SUCCESS);
+		        resp.setMessage("Successfully fetched user count for all roles.");
+		        resp.setData(response);
+
+		        return ResponseEntity.ok(resp);
+		    } catch (Exception e) {
+		        resp.setStatus(CommonMessages.FAILED);
+		        resp.setMessage("Error fetching user count: " + e.getMessage());
+		        return ResponseEntity.internalServerError().body(resp);
+		    }
+	}
+
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getCountByMonth() {
+		  ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+		    Map<String, Object> response = new HashMap<>();
+
+		    try {
+		        List<Object[]> result = loginRepository.findCountByMonthAndRole();
+
+		        // Initialize a map to store the grouped results
+		        Map<String, List<Map<String, Object>>> groupedByMonth = new LinkedHashMap<>();
+
+		        // Process the result list to organize the data
+		        for (Object[] row : result) {
+		            Integer month = (Integer) row[0];  // Get the month
+		            String role = (String) row[1];     // Get the role name
+		            Long registrationCount = (Long) row[2];  // Get the registration count
+
+		            // Format month as string (e.g., "January", "February")
+		            String monthString = Month.of(month).name();
+
+		            // Prepare the map to hold the current entry
+		            Map<String, Object> data = new HashMap<>();
+		            data.put("role", role);
+		            data.put("registrationCount", registrationCount);
+
+		            // Add this data to the map grouped by month
+		            groupedByMonth.computeIfAbsent(monthString, k -> new ArrayList<>()).add(data);
+		        }
+
+		        // Put the grouped results into the response
+		        response.put("monthlyRegistrations", groupedByMonth);
+		        resp.setStatus(CommonMessages.SUCCESS);
+		        resp.setMessage("Registration count by month retrieved successfully.");
+		        resp.setData(response);
+
+		        return ResponseEntity.ok(resp);
+		    } catch (Exception e) {
+		        resp.setStatus(CommonMessages.FAILED);
+		        resp.setMessage("Error fetching registration count by month: " + e.getMessage());
+		        return ResponseEntity.internalServerError().body(resp);
+		    }
+	}
+
+	@Override
+	public ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLaborDetails() {
+		 ApiResponse<List<LaboursDto>> resp = new ApiResponse<>();
+	        
+	        try {
+	            // Define Pageable object for pagination (10 latest labors sorted by createdAt DESC)
+	            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdAt")));
+	            
+	            // Fetch the latest labors using the repository
+	            Page<LaboursDto> laborPage = loginRepository.findLatestLabors(pageable);
+
+	            // Check if there are no labors found
+	            if (!laborPage.hasContent()) {
+	                resp.setStatus(CommonMessages.FAILED);
+	                resp.setMessage(CommonMessages.L_error);
+	                return ResponseEntity.ok(resp);
+	            }
+
+	            // Set success status and the list of labors
+	            resp.setStatus(CommonMessages.SUCCESS);
+	            resp.setMessage(CommonMessages.L_success);
+	            resp.setData(laborPage.getContent()); // Extract list of labors
+
+	            return ResponseEntity.ok(resp);
+	        } catch (Exception e) {
+	            // Handle any exceptions and return an error response
+	            resp.setStatus(CommonMessages.FAILED);
+	            resp.setMessage(CommonMessages.L_Ef);
+	            return ResponseEntity.internalServerError().body(resp);
+	        }
+
+	}
 }

@@ -18,4 +18,12 @@ public interface SuperAdminService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
 
+	ResponseEntity<ApiResponse<Map<String, Object>>> getAllAdminDetails();
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getAllSupervisors();
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getAllCoworkers();
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours();
+
 }

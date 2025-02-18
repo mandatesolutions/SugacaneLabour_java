@@ -1,6 +1,7 @@
 package com.sugarcanelabour.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.helper.ApiResponse;
 import com.sugarcanelabour.helper.CommonFunctions;
+import com.sugarcanelabour.model.LaboursDto;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
+import com.sugarcanelabour.service.SupervisorService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,12 +35,14 @@ public class SupervisorController {
 	
 	private CommonLoginService commonLoginService;
 	private CommonFunctions commonFunctions;
+	private SupervisorService supervisorService;
 	
 	
-	  public SupervisorController(CommonLoginService commonLoginService, CommonFunctions commonFunctions) {
+	  public SupervisorController(CommonLoginService commonLoginService, CommonFunctions commonFunctions,SupervisorService supervisorService) {
 		super();
 		this.commonLoginService = commonLoginService;
 		this.commonFunctions = commonFunctions;
+		this.supervisorService=supervisorService;
 	}
 
 	@Operation(summary = "Register Coworker API", description = "This API is used to register a coworker by the supervisor")
@@ -66,6 +71,48 @@ public class SupervisorController {
 
 	      // Return the response from the service
 	      return response;
+	  }
+	  
+//    ****COUNT******
+	  
+	  @Operation(summary = "Get User Count For All Roles", description = "This API retrieves the count of users for all roles.")
+	  @GetMapping("/getUserCountByAllRoles")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getUserCountByAllRoles() {
+	      return supervisorService.getCountByAllRoles();
+	  }
+	  
+	  //   ******* REGISTRATION BY MONTH *********
+	  @GetMapping("/registrations-by-month")
+	    public ResponseEntity<ApiResponse<Map<String, Object>>> getRegistrationCountByMonth() {
+	        return supervisorService.getCountByMonth();
+	    }
+	  
+	  //****TOP 10 LABORS ******
+
+	  @Operation(summary = "Get Latest 10 Labors", description = "Fetches the latest 10 registered labors.")
+	    @GetMapping("/getLatestLabors")
+	    public ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLaborsDetails() {
+	        return supervisorService.getLatestLaborDetails();
+	    }
+	  
+	  
+	  //****GET ALL ****
+	
+	  
+	  @GetMapping("/getAllCoworkers")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllCoworkers() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllCoworkers *****");
+		  return supervisorService.getAllCoworkers();
+
+	  }
+	  
+	  @GetMapping("/getAllLabours")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllLabours *****");
+		  return supervisorService.getAllLabours();
+
 	  }
 }
 

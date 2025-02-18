@@ -32,4 +32,5 @@ public class Role implements Serializable {
 	@Column(name = "role_name", unique = true)
 	private String roleName;
 
+	
 }

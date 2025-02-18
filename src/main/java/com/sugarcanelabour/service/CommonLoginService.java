@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.SupervisorDetails;
 import com.sugarcanelabour.helper.ApiResponse;
+import com.sugarcanelabour.model.LaboursDto;
 import com.sugarcanelabour.model.LoginRequest;
 import com.sugarcanelabour.model.RegistrationDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
@@ -39,6 +40,26 @@ public interface CommonLoginService {
 	ResponseEntity<ApiResponse<Map<String, Object>>> deactivateUser(Long userId);
 
 	ResponseEntity<ApiResponse<List<Map<String, Object>>>> getAllLaborDetails();
+
+//	ResponseEntity<ApiResponse<Map<String, Object>>> getAdminCount();
+
+	//ResponseEntity<ApiResponse<Map<String, Object>>> getUserCountByRole(Long roleId);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getRegistrationCountByMonth();
+
+	//ResponseEntity<ApiResponse<Map<String, Object>>> getUserCounts();
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getUserCountByAllRoles();
+
+	ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLabors();
+	
+	//ADMINS
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getCountByAllRoles();
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getCountByMonth();
+
+	ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLaborDetails();
 
 	// ResponseEntity<ApiResponse<String>> updateLaborDetails(Long commonLoginId,
 	// RegistrationDto laborUpdateRequest);

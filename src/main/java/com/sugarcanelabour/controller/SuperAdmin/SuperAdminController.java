@@ -1,6 +1,7 @@
 package com.sugarcanelabour.controller.SuperAdmin;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sugarcanelabour.helper.ApiResponse;
+import com.sugarcanelabour.model.LaboursDto;
 import com.sugarcanelabour.model.SuperAdminRegistrationDto;
 import com.sugarcanelabour.service.CommonLoginService;
 import com.sugarcanelabour.service.SuperAdminService;
@@ -122,7 +124,67 @@ public class SuperAdminController {
 	      return response;
 	  }
 	  
+//	  @GetMapping("/admin-count")
+//		 @Operation(summary = "Get Admin Count", description = "This API retrieves the count of admin users.")
+//		 public ResponseEntity<ApiResponse<Map<String, Object>>> getAdminCount() {
+//		     return commonLoginService.getAdminCount();
+//		 }
 
+	  @Operation(summary = "Get User Count For All Roles", description = "This API retrieves the count of users for all roles.")
+	  @GetMapping("/getUserCountByAllRoles")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getUserCountByAllRoles() {
+	      return commonLoginService.getUserCountByAllRoles();
+	  }
+
+	  
+	  //registration count by month
+
+	  @GetMapping("/registrations-by-month")
+	    public ResponseEntity<ApiResponse<Map<String, Object>>> getRegistrationCountByMonth() {
+	        return commonLoginService.getRegistrationCountByMonth();
+	    }
+	  
+	  @Operation(summary = "Get Latest 10 Labors", description = "Fetches the latest 10 registered labors.")
+	    @GetMapping("/getLatestLabors")
+	    public ResponseEntity<ApiResponse<List<LaboursDto>>> getLatestLabors() {
+	        return commonLoginService.getLatestLabors();
+	    }
+	  
+	  @GetMapping("/getAllAdmins")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllAdmins() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllAdmins *****");
+		  return adminService.getAllAdminDetails();
+	  }
+	  
+	  @GetMapping("/getAllSupervisors")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllSupervisors() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllSupervisors *****");
+		  return adminService.getAllSupervisors();
+	  }
+	  
+	  @GetMapping("/getAllCoworkers")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllCoworkers() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllCoworkers *****");
+		  return adminService.getAllCoworkers();
+
+	  }
+	  
+	  @GetMapping("/getAllLabours")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() 
+	  {
+		  log.info("***** Inside - SuperAdminController - getAllLabours *****");
+		  return adminService.getAllLabours();
+
+	  }
+	  
+	  
+	  
+	  
+	  
+	  
 
 
 }

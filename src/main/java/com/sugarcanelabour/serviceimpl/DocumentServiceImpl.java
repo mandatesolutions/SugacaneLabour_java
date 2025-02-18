@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sugarcanelabour.entity.CommonLogin;
 import com.sugarcanelabour.entity.Document;
 import com.sugarcanelabour.helper.ApiResponse;
+import com.sugarcanelabour.helper.CommonMessages;
 import com.sugarcanelabour.helper.Enums.DocumentType;
 import com.sugarcanelabour.model.UploadDocumentDto;
 import com.sugarcanelabour.repository.CommonLoginRepository;
@@ -51,17 +52,17 @@ public class DocumentServiceImpl implements DocumentService {
 	public ResponseEntity<ApiResponse<String>> handleFileUploadWithMetadata(UploadDocumentDto uploadDocumentDto,
 			Long commonLoginId) {
 		if (uploadDocumentDto.getFile() == null || uploadDocumentDto.getFile().isEmpty()) {
-			return ResponseEntity.badRequest().body(new ApiResponse<>("Error", "No file uploaded", null));
+			return ResponseEntity.badRequest().body(new ApiResponse<>(CommonMessages.Error,CommonMessages.N_D_U, null));
 		}
 
 		try {
 			String savedFilePath = uploadFile(uploadDocumentDto.getFile());
 			saveFileMetadata(uploadDocumentDto.getDocumentTypes(), savedFilePath, commonLoginId);
 			return ResponseEntity
-					.ok(new ApiResponse<>("Success", "File uploaded successfully: " + savedFilePath, null));
+					.ok(new ApiResponse<>(CommonMessages.SUCCESS,CommonMessages.File_U_S+ savedFilePath, null));
 		} catch (IOException e) {
 			log.error("File upload failed", e);
-			return ResponseEntity.internalServerError().body(new ApiResponse<>("Error", "File upload failed", null));
+			return ResponseEntity.internalServerError().body(new ApiResponse<>(CommonMessages.Error,CommonMessages.Doc_UF, null));
 		}
 	}
 

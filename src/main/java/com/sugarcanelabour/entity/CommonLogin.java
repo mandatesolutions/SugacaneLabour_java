@@ -69,6 +69,10 @@ public class CommonLogin {
 
 	@Column(unique = true, nullable = true, updatable = false)
 	private String uuid;
+	
+	@Column(name = "registration_date")
+	private LocalDateTime registrationDate; // Add this field to store registration date
+
 
 	// Method to generate UUID only for 'ROLE_LABOR'
 	@PrePersist
@@ -78,7 +82,12 @@ public class CommonLogin {
 			this.uuid = generateUniqueNumber(); // Generate unique numeric-like UUID
 			System.out.println("UUID generated for ROLE_LABOR: " + this.uuid);
 
-		}
+		}	
+		 // Set registrationDate if not already set
+        if (this.registrationDate == null) {
+            this.registrationDate = LocalDateTime.now(); // Set current date if not already set
+	}
+	
 	}
 
 	private String generateUniqueNumber() {
