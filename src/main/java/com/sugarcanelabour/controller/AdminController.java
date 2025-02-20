@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,13 +30,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdminController {
 
-	@Autowired
 	private CommonLoginService commonLoginService;
-	@Autowired
 	private CommonMessages msg;
-	
-	@Autowired
 	private AdminService adminService;
+	
+	
+
+	public AdminController(CommonLoginService commonLoginService, CommonMessages msg, AdminService adminService) {
+		this.commonLoginService = commonLoginService;
+		this.msg = msg;
+		this.adminService = adminService;
+	}
 
 	// Admin registers a supervisor
 	  @PostMapping("/register-supervisor")
@@ -94,14 +97,14 @@ public class AdminController {
 	  @GetMapping("/getAllSupervisors")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllSupervisors() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllSupervisors *****");
+		  log.info("***** Inside - AdminController - getAllSupervisors *****");
 		  return adminService.getAllSupervisors();
 	  }
 	  
 	  @GetMapping("/getAllCoworkers")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllCoworkers() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllCoworkers *****");
+		  log.info("***** Inside - AdminController - getAllCoworkers *****");
 		  return adminService.getAllCoworkers();
 
 	  }
@@ -109,8 +112,32 @@ public class AdminController {
 	  @GetMapping("/getAllLabours")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllLabours *****");
+		  log.info("***** Inside - AdminController - getAllLabours *****");
 		  return adminService.getAllLabours();
 
 	  }
+	  
+	  //get by Id
+	  
+	  @GetMapping("/getSupervisorDetails/{userId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorDetails(@PathVariable Long userId)
+	  {
+		  log.info("***** Inside - AdminController - getSupervisorDetails *****");
+		  return adminService.getSupervisorById(userId);
+	  }
+	  
+	  @GetMapping("/getCoworkerDetails/{commonLoginId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(@PathVariable Long commonLoginId)
+	  {
+		  log.info("***** Inside - AdminController - getCoworkerDetails *****");
+		  return adminService.getCoworkerById(commonLoginId);
+	  }
+	  
+	  @GetMapping("/getLabourDetails/{commonLoginId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getLabourDetails(@PathVariable Long commonLoginId)
+	  {
+		  log.info("***** Inside - AdminController - getLabourDetails *****");
+		  return adminService.getLabourById(commonLoginId);
+	  }
+	  
 }

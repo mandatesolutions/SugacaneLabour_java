@@ -1,5 +1,6 @@
 package com.sugarcanelabour.serviceimpl;
 
+import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,16 +36,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CoworkerServiceImpl implements CoworkerService{
 	
-	
-	@Autowired
+
 	private CommonLoginRepository loginRepository;
-
-	@Autowired
 	private SupervisorDetailsRepository supervisorDetailsRepository;
-
-	@Autowired
 	private DocumentRepository documentRepository;
 	
+	
+	
+	public CoworkerServiceImpl(CommonLoginRepository loginRepository,
+			SupervisorDetailsRepository supervisorDetailsRepository, DocumentRepository documentRepository) {
+		this.loginRepository = loginRepository;
+		this.supervisorDetailsRepository = supervisorDetailsRepository;
+		this.documentRepository = documentRepository;
+	}
+
 	@Override
 	public ResponseEntity<ApiResponse<Map<String, Object>>> getCountByAllRoles() {
 		  ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
@@ -241,5 +245,138 @@ public class CoworkerServiceImpl implements CoworkerService{
 	         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	     }
 	 }
+
+	 //get By Id
+	 
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getLabourById(Long commonLoginId) {
+		ApiResponse<Map<String, Object>> response = new ApiResponse<>();
+		Map<String, Object> data = new HashMap<>();
+
+		try {
+			// Fetch CommonLogin details
+			CommonLogin commonLogin = loginRepository.findById(commonLoginId)
+					.orElseThrow(() -> new RuntimeException(CommonMessages.L_NF));
+
+			// Check if the role is LABOR
+			if (!"ROLE_LABOUR".equalsIgnoreCase(commonLogin.getRole().getRoleName())) {
+				response.setStatus(CommonMessages.FAILED);
+				response.setMessage(CommonMessages.U_Not_Labour);
+				return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+			}
+
+			// Fetch supervisor details (reusing SupervisorDetails entity for labor)
+			Optional<SupervisorDetails> supervisorDetailsOpt = supervisorDetailsRepository
+					.findByCommonLogin(commonLogin);
+
+			if (!supervisorDetailsOpt.isPresent()) {
+				response.setStatus(CommonMessages.FAILED);
+				response.setMessage(CommonMessages.S_DETAILS_NF);
+				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+			}
+
+			SupervisorDetails supervisorDetails = supervisorDetailsOpt.get();
+
+			// Collect labor details
+			data.put("userId", commonLogin.getUserId());
+			data.put("email", commonLogin.getEmail());
+			data.put("role", commonLogin.getRole().getRoleName());
+			data.put("mobileNo", commonLogin.getMobileNo());
+			data.put("firstName", supervisorDetails.getFirstName());
+			data.put("lastName", supervisorDetails.getLastName());
+			data.put("gender", supervisorDetails.getGender());
+			data.put("bloodGroup", supervisorDetails.getBloodGroup());
+			data.put("address", supervisorDetails.getAddress());
+			data.put("districtId", supervisorDetails.getTaluka().getDistrict().getDistrictId());
+			data.put("DistrictName", supervisorDetails.getTaluka().getDistrict().getDistrictName());
+			data.put("talukaId", supervisorDetails.getTaluka().getTalukaId());
+			data.put("TalukaName", supervisorDetails.getTaluka().getTalukaName());
+			data.put("age", supervisorDetails.getAge());
+			data.put("familyMembers", supervisorDetails.getFamilyMembers());
+			data.put("medicalHistory", supervisorDetails.getMedicalHistory());
+			data.put("uniqueLaborId", supervisorDetails.getUniqueLaborId());
+
+			// Fetch documents associated with the labor
+			List<Document> documents = documentRepository.findByCommonLogin(commonLogin);
+
+			if (!documents.isEmpty()) {
+				List<Map<String, String>> documentDetails = new ArrayList<>();
+
+				for (Document document : documents) {
+					Map<String, String> documentInfo = new HashMap<>();
+					documentInfo.put("documentType", document.getDocumentType().name());
+					documentInfo.put("documentLink", document.getDocumentLink());
+					documentDetails.add(documentInfo);
+				}
+
+				data.put("documents", documentDetails);
+			} else {
+				data.put("documents", CommonMessages.N_D_U);
+			}
+
+			// Success response
+			response.setStatus(CommonMessages.SUCCESS);
+			response.setMessage(CommonMessages.L_S);
+			response.setData(data);
+
+			return new ResponseEntity<>(response, HttpStatus.OK);
+
+		} catch (Exception e) {
+			// Error handling
+			response.setStatus(CommonMessages.FAILED);
+			response.setMessage(CommonMessages.EFLD);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	//GET DAY COUNT
+
+	@Override
+	public ResponseEntity<ApiResponse<Map<String, Object>>> getTodaysCount() {
+	    ApiResponse<Map<String, Object>> resp = new ApiResponse<>();
+	    Map<String, Object> response = new HashMap<>();
+
+	    try {
+	        List<Object[]> result = loginRepository.findTodayRegistrationCount();
+
+	        // Store count by role
+	        Map<String, Long> roleCounts = new HashMap<>();
+
+	        // Process the result list
+	        for (Object[] row : result) {
+	            String role = (String) row[0]; // Get the role name
+	            Long registrationCount = (Long) row[1]; // Get the registration count
+	            roleCounts.put(role, registrationCount);
+	        }
+
+	        // Define all roles to ensure zero count is shown for roles with no registrations
+	        List<String> allRoles = List.of("ROLE_LABOUR"); // Add all roles
+
+	        List<Map<String, Object>> todayRegistrations = new ArrayList<>();
+
+	        // Loop through all roles and ensure zero count where necessary
+	        for (String role : allRoles) {
+	            Map<String, Object> data = new HashMap<>();
+	            data.put("role", role);
+	            data.put("registrationCount", roleCounts.getOrDefault(role, 0L)); // Default to 0 if not found
+	            todayRegistrations.add(data);
+	        }
+
+	        response.put("date", LocalDate.now().toString()); // Add today's date
+	        response.put("todayRegistrations", todayRegistrations);
+	        
+
+	        resp.setStatus(CommonMessages.SUCCESS);
+	        resp.setMessage(CommonMessages.Count_Retrieved_success);
+	        resp.setData(response);
+
+	        return ResponseEntity.ok(resp);
+	    } catch (Exception e) {
+	        resp.setStatus(CommonMessages.FAILED);
+	        resp.setMessage(CommonMessages.Error_fetch_Count );
+	        return ResponseEntity.internalServerError().body(resp);
+	    }
+	}
+
 
 }

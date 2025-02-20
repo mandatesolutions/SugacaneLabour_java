@@ -78,5 +78,16 @@ public interface CommonLoginRepository extends JpaRepository<CommonLogin, Long> 
 				       "ORDER BY MONTH(cl.createdAt) DESC")
 				List<Object[]> findCountBy_Month_Role();
 
+		
+
+				@Query(value = "SELECT r.role_name, COUNT(*) " +
+			               "FROM common_login cl " +
+			               "JOIN role r ON cl.role_id = r.id " +
+			               "WHERE DATE(cl.created_at) = CURRENT_DATE " +
+			               "GROUP BY r.role_name", nativeQuery = true)
+			List<Object[]> findTodayRegistrationCount();
+
+
+
 
 }

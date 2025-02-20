@@ -103,8 +103,21 @@ public class CoworkerController {
 	  @GetMapping("/getAllLabours")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllLabours *****");
+		  log.info("***** Inside - CoworkerController - getAllLabours *****");
 		  return coworkerService.getAllLabours();
 
+	  }
+	  
+	  @GetMapping("/getLabourDetails/{commonLoginId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getLabourDetails(@PathVariable Long commonLoginId)
+	  {
+		  log.info("***** Inside - CoworkerController - getAllLabours *****");
+		  return coworkerService.getLabourById(commonLoginId);
+	  }
+	  
+	  @GetMapping("/TodaysRegistrationCount")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>>getTodayRegistrationCount()
+	  {
+		  return coworkerService.getTodaysCount();
 	  }
 }

@@ -18,4 +18,11 @@ public interface CoworkerService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours();
 
+	ResponseEntity<ApiResponse<Map<String, Object>>> getLabourById(Long commonLoginId);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getTodaysCount();
+
+	
+
+
 }

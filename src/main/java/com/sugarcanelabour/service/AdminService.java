@@ -14,4 +14,10 @@ public interface AdminService {
 
 	ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours();
 
+	ResponseEntity<ApiResponse<Map<String, Object>>> getSupervisorById(Long userId);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerById(Long commonLoginId);
+
+	ResponseEntity<ApiResponse<Map<String, Object>>> getLabourById(Long commonLoginId);
+
 }

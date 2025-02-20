@@ -72,6 +72,16 @@ public class CommonMessages {
 	public static final String NOT_FOUND = "User not found.";
 	public static final String EFLD = "Error fetching labor details";
 	public static final String S_DETAILS_NF = "Supervisor details not found.";
+	public static final String S_details_N_F = "Supervisor details not found.";
+	public static final String Not_supervisor = "User is not a supervisor.";
+	public static final String Sup_NOT_FOUND = "Supervisor Not found";
+	public static final String Error_Fetch_Coworker = "Error fetching coworker details ";
+	public static final String C_Fetch_Successs = "Coworker details fetched successfully.";
+	public static final String CD_not_found = "Coworker details not found.";
+	public static final String U_not_coworker = "User is not a coworker.";
+	public static final String U_Not_Labour = "User is not a laborer.";
+	public static final String Error_fetch_Count = "Error fetching today's registration count";
+	public static final String Count_Retrieved_success = "Today's registration count retrieved successfully.";
 }
 
 

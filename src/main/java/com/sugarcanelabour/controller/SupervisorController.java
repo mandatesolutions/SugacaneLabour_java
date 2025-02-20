@@ -102,7 +102,7 @@ public class SupervisorController {
 	  @GetMapping("/getAllCoworkers")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllCoworkers() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllCoworkers *****");
+		  log.info("***** Inside - SupervisorController - getAllCoworkers *****");
 		  return supervisorService.getAllCoworkers();
 
 	  }
@@ -110,9 +110,23 @@ public class SupervisorController {
 	  @GetMapping("/getAllLabours")
 	  public ResponseEntity<ApiResponse<Map<String, Object>>> getAllLabours() 
 	  {
-		  log.info("***** Inside - SuperAdminController - getAllLabours *****");
+		  log.info("***** Inside - SupervisorController - getAllLabours *****");
 		  return supervisorService.getAllLabours();
 
+	  }
+	  
+	  @GetMapping("/getCoworker/{commonLoginId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getCoworkerDetails(@PathVariable Long commonLoginId)
+	  {
+		  log.info("***** Inside - SupervisorController - getCoworkerById *****");
+		  return supervisorService.getCoworkerById(commonLoginId);
+	  }
+	  
+	  @GetMapping("/getLabourDetails/{commonLoginId}")
+	  public ResponseEntity<ApiResponse<Map<String, Object>>> getLabourDetails(@PathVariable Long commonLoginId)
+	  {
+		  log.info("***** Inside - SupervisorController - getLabourById *****");
+		  return supervisorService.getLabourById(commonLoginId);
 	  }
 }
 
